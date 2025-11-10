@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"plan2go-backend/cmd"
+)
 
 func main() {
-	fmt.Println("hiii this is our first project");
+	cmd.Serve()
 }
