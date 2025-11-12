@@ -2,6 +2,7 @@ package main
 
 import (
 	"plan2go-backend/cmd"
+	"plan2go-backend/database"
 )
 
 func main() {
