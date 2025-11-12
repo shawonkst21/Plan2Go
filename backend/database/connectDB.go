@@ -20,7 +20,6 @@ func ConnectDB() {
 		log.Fatal("Error creating DB handle:", err)
 	}
 
-	// ✅ Check the actual connection
 	err = DB.Ping()
 	if err != nil {
 		log.Fatal("Error connecting to database:", err)
