@@ -1,9 +1,9 @@
-package cmd
+package rest
 
 import (
 	"net/http"
-	"plan2go-backend/handlers"
-	"plan2go-backend/middleware"
+	"plan2go-backend/rest/handlers"
+	"plan2go-backend/rest/middleware"
 )
 
 func InitRoutes(mux *http.ServeMux, manager *middleware.Manager){

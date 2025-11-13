@@ -3,21 +3,29 @@ package cmd
 import (
 	"fmt"
 	"net/http"
-	"plan2go-backend/middleware"
+	"os"
+	"plan2go-backend/config"
+	"plan2go-backend/rest"
+	"plan2go-backend/rest/middleware"
 	"plan2go-backend/util"
+	"strconv"
 )
 
 func Serve() {
-	manager := middleware.NewManager()
+	
+	cnf:=config.GetConfig()
+		manager := middleware.NewManager()
 	manager.Use(middleware.Logger)
 
 	mux := http.NewServeMux()
-	InitRoutes(mux, manager)
+	rest.InitRoutes(mux, manager)
 
-	fmt.Println("Server is running on port 8080")
-	err := http.ListenAndServe(":8080", util.GlobalRouter(mux))
+	adrr := ":" + strconv.Itoa(cnf.HttpPort)
+	fmt.Println("Server is running on port", adrr)
+	err := http.ListenAndServe(adrr, util.GlobalRouter(mux))
 	if err != nil {
 		fmt.Println("Error starting server:", err)
+		os.Exit(1)
 	}
-
+	
 }
