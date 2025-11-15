@@ -11,8 +11,9 @@ type Config struct{
 	Version string
 	ServiceName string
 	HttpPort int
+	Jwt_SecretKey string
 }
-var configuration Config
+var configuration *Config
 func LoadConfig() {
 	err:=godotenv.Load()
 	if err!=nil{
@@ -39,13 +40,20 @@ func LoadConfig() {
 		fmt.Println("HTTP_PORT must be a valid integer")
 		os.Exit(1)
 	 }
-	 configuration=Config{
+	 jwtSecretkey:=os.Getenv("JWT_SECRETKEY")
+	 if jwtSecretkey==""{
+		fmt.Println("JWT_SECRETKEY not set in .env file")
+		os.Exit(1)	
+	 }
+	 configuration=&Config{
 		Version:version,
 		ServiceName:serviceName,
 		HttpPort:httpPortInt,
 	}
 }
-func GetConfig() Config{
-	LoadConfig()
+func GetConfig() *Config{
+	if(configuration==nil){
+		LoadConfig()
+	}
 	return configuration
 }
