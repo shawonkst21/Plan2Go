@@ -34,8 +34,7 @@ func (h *Handler) GetUserByEmail(w http.ResponseWriter, r *http.Request) {
 
 	// OPTIONAL: Generate token (if this is login)
 	cnf := config.GetConfig()
-	token, _ := util.GenerateToken(cnf.Jwt_SecretKey, foundUser.ID, foundUser.Username)
-
+	token, _ := util.GenerateToken(cnf.Jwt_SecretKey, foundUser.Email)
 	// Return user + token
 	util.SendData(w, map[string]interface{}{
 		"user":  foundUser,

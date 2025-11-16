@@ -20,7 +20,7 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux, manager *middleware.Manager
 		),
 	)
 	mux.Handle(
-		"GET /users/profile",
+		"POST /users/profile",
 		manager.With(
 			http.HandlerFunc(h.GetUserByEmail),
 		),

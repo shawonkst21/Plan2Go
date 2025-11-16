@@ -21,12 +21,11 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var id int
-	var username string
 	var storedPassword string
 
-	query := "SELECT id, username, password FROM users WHERE email = ?"
-	err := db.DB.QueryRow(query, req.Email).Scan(&id, &username, &storedPassword)
+	// Only fetch email + password
+	query := "SELECT password FROM users WHERE email = ?"
+	err := db.DB.QueryRow(query, req.Email).Scan(&storedPassword)
 	if err != nil {
 		http.Error(w, "User not found", http.StatusUnauthorized)
 		return
@@ -37,9 +36,12 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Generate JWT
+	// Generate JWT using only email
 	cnf := config.GetConfig()
-	token, _ := util.GenerateToken(cnf.Jwt_SecretKey, id, username)
+	token, _ := util.GenerateToken(cnf.Jwt_SecretKey, req.Email)
 
-	util.SendData(w, map[string]string{"token": token}, http.StatusOK)
+	util.SendData(w, map[string]string{
+		"message": "Login successful",
+		"token": token}, http.StatusOK)
 }
+

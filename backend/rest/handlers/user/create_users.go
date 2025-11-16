@@ -32,7 +32,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	// Generate token
 	cnf := config.GetConfig()
-	token, _ := util.GenerateToken(cnf.Jwt_SecretKey, createdUser.ID, createdUser.Username)
+	token, _ := util.GenerateToken(cnf.Jwt_SecretKey, createdUser.Email)
 
 	util.SendData(w, map[string]string{"token": token}, http.StatusCreated)
 }
