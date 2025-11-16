@@ -5,8 +5,8 @@ import (
 	"plan2go-backend/rest/middleware"
 )
 
-func (h *Handler) RegisterRoutes(mux *http.ServeMux, manager *middleware.Manager){
-	
+func (h *Handler) RegisterRoutes(mux *http.ServeMux, manager *middleware.Manager) {
+
 	mux.Handle(
 		"POST /users",
 		manager.With(
@@ -17,7 +17,13 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux, manager *middleware.Manager
 		"POST /users/login",
 		manager.With(
 			http.HandlerFunc(h.Login),
-					
 		),
 	)
+	mux.Handle(
+		"GET /users/profile",
+		manager.With(
+			http.HandlerFunc(h.GetUserByEmail),
+		),
+	)
+
 }

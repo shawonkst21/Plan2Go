@@ -24,7 +24,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	user.Password = hashedPassword
 
 	// Use the repository to create user
-	createdUser, err :=h.userRepo.CreateUser(user)
+	createdUser, err := h.userRepo.CreateUser(user)
 	if err != nil {
 		http.Error(w, "User already exists or DB error", http.StatusConflict)
 		return
