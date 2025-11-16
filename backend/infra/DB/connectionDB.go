@@ -10,7 +10,7 @@ import (
 
 var DB *sql.DB
 
-func ConnectDB() (*sql.DB,error){
+func ConnectDB() (*sql.DB, error) {
 	// Format: username:password@tcp(host:port)/database_name
 	dsn := "plan2go:12345@tcp(10.100.94.227:3306)/plan2go"
 

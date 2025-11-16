@@ -12,14 +12,15 @@ type User struct {
 type UserRepo interface {
 	CreateUser(user User) (*User, error)
 	GetUserByEmail(email string) (*User, error)
-	GetUsrPassword(email string) (string, error)
+	GetUserPassword(email string) (string, error)
+	UpdatePassword(email, HashedPassword string) (*User, error)
 }
 
 type userRepo struct {
 	dbCon *sql.DB
 }
 
-func NewUserRepo( dbCon *sql.DB) UserRepo {
+func NewUserRepo(dbCon *sql.DB) UserRepo {
 	return &userRepo{
 		dbCon: dbCon,
 	}
@@ -41,7 +42,7 @@ func (r *userRepo) CreateUser(user User) (*User, error) {
 	if err != nil {
 		return nil, err
 	}
-	user.ID = int(id)   
+	user.ID = int(id)
 	return &user, nil
 }
 func (r *userRepo) GetUserByEmail(email string) (*User, error) {
@@ -68,7 +69,7 @@ func (r *userRepo) GetUserByEmail(email string) (*User, error) {
 
 	return user, nil
 }
-func (r *userRepo) GetUsrPassword(email string) (string, error) {
+func (r *userRepo) GetUserPassword(email string) (string, error) {
 	query := `
 		SELECT password
 		FROM users
@@ -86,4 +87,20 @@ func (r *userRepo) GetUsrPassword(email string) (string, error) {
 	}
 
 	return password, nil
+}
+
+func (r *userRepo) UpdatePassword(email, HashedPassword string) (*User, error) {
+	// 1. Update the password
+	updateQuery := `
+		UPDATE users
+		SET password = ?
+		WHERE email = ?
+	`
+	_, err := r.dbCon.Exec(updateQuery, HashedPassword, email)
+	if err != nil {
+		return nil, err
+	}
+
+	// 2. Return the updated user
+	return r.GetUserByEmail(email)
 }

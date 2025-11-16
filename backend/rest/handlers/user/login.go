@@ -22,7 +22,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	var storedPassword string
 
-	storedPassword, err := h.userRepo.GetUsrPassword(req.Email)
+	storedPassword, err := h.userRepo.GetUserPassword(req.Email)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
@@ -44,6 +44,5 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	util.SendData(w, map[string]string{
 		"message": "Login successful",
-		"token": token}, http.StatusOK)
+		"token":   token}, http.StatusOK)
 }
-

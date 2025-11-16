@@ -25,5 +25,11 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux, manager *middleware.Manager
 			http.HandlerFunc(h.GetUserByEmail),
 		),
 	)
+	mux.Handle(
+		"POST /users/update/password",
+		manager.With(
+			http.HandlerFunc(h.ChangePassword),
+		),
+	)
 
 }
