@@ -1,4 +1,4 @@
-package database
+package db
 
 import (
 	"database/sql"
@@ -10,7 +10,7 @@ import (
 
 var DB *sql.DB
 
-func ConnectDB() {
+func ConnectDB() (*sql.DB,error){
 	// Format: username:password@tcp(host:port)/database_name
 	dsn := "root:@tcp(127.0.0.1:3306)/plan2go"
 
@@ -26,4 +26,5 @@ func ConnectDB() {
 	}
 
 	fmt.Println("Connected to MySQL Database successfully! 🟢")
+	return DB, nil
 }

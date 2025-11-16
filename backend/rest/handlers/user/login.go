@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"plan2go-backend/config"
-	"plan2go-backend/database"
+	db "plan2go-backend/infra/DB"
 	"plan2go-backend/util"
 )
 
@@ -26,7 +26,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	var storedPassword string
 
 	query := "SELECT id, username, password FROM users WHERE email = ?"
-	err := database.DB.QueryRow(query, req.Email).Scan(&id, &username, &storedPassword)
+	err := db.DB.QueryRow(query, req.Email).Scan(&id, &username, &storedPassword)
 	if err != nil {
 		http.Error(w, "User not found", http.StatusUnauthorized)
 		return
