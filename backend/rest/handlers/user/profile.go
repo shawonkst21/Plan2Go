@@ -1,27 +1,43 @@
 package user
 
 import (
-	"encoding/json"
 	"net/http"
 	"plan2go-backend/config"
 	"plan2go-backend/util"
 )
 
-type emailRequest struct {
-	Email string `json:"email"`
-}
-
 func (h *Handler) GetUserByEmail(w http.ResponseWriter, r *http.Request) {
-	var req emailRequest
 
-	// Decode request body
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request", http.StatusBadRequest)
+	// 1. Read JWT from "Authorization" header
+	authHeader := r.Header.Get("Authorization")
+	if authHeader == "" {
+		http.Error(w, "Missing Authorization header", http.StatusUnauthorized)
 		return
 	}
 
-	// Get user from repository
-	foundUser, err := h.userRepo.GetUserByEmail(req.Email)
+	// Expected format: Bearer <token>
+	tokenString := authHeader
+	if len(authHeader) > 7 && authHeader[:7] == "Bearer " {
+		tokenString = authHeader[7:]
+	}
+
+	// 2. Verify and extract claims
+	cnf := config.GetConfig()
+	claims, err := util.VerifyToken(tokenString, cnf.Jwt_SecretKey)
+	if err != nil {
+		http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
+		return
+	}
+
+	// 3. Extract email from JWT payload
+	email := claims.Email
+	if email == "" {
+		http.Error(w, "Token missing email", http.StatusUnauthorized)
+		return
+	}
+
+	// 4. Query database using email
+	foundUser, err := h.userRepo.GetUserByEmail(email)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
@@ -32,12 +48,6 @@ func (h *Handler) GetUserByEmail(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// OPTIONAL: Generate token (if this is login)
-	cnf := config.GetConfig()
-	token, _ := util.GenerateToken(cnf.Jwt_SecretKey, foundUser.Email)
-	// Return user + token
-	util.SendData(w, map[string]interface{}{
-		"user":  foundUser,
-		"token": token,
-	}, http.StatusOK)
+	// 5. Send user info back
+	util.SendData(w, foundUser, http.StatusOK)
 }
