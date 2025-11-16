@@ -12,6 +12,7 @@ type User struct {
 type UserRepo interface {
 	CreateUser(user User) (*User, error)
 	GetUserByEmail(email string) (*User, error)
+	GetUsrPassword(email string) (string, error)
 }
 
 type userRepo struct {
@@ -66,4 +67,23 @@ func (r *userRepo) GetUserByEmail(email string) (*User, error) {
 	}
 
 	return user, nil
+}
+func (r *userRepo) GetUsrPassword(email string) (string, error) {
+	query := `
+		SELECT password
+		FROM users
+		WHERE email = ?
+		LIMIT 1
+	`
+
+	var password string
+	err := r.dbCon.QueryRow(query, email).Scan(&password)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return "", nil // no user found
+		}
+		return "", err
+	}
+
+	return password, nil
 }

@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"plan2go-backend/config"
-	db "plan2go-backend/infra/DB"
 	"plan2go-backend/util"
 )
 
@@ -23,10 +22,13 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	var storedPassword string
 
-	// Only fetch email + password
-	query := "SELECT password FROM users WHERE email = ?"
-	err := db.DB.QueryRow(query, req.Email).Scan(&storedPassword)
+	storedPassword, err := h.userRepo.GetUsrPassword(req.Email)
 	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	if storedPassword == "" {
 		http.Error(w, "User not found", http.StatusUnauthorized)
 		return
 	}
