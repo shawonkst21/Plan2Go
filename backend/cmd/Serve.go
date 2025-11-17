@@ -8,6 +8,7 @@ import (
 	"plan2go-backend/repo"
 	"plan2go-backend/rest"
 	"plan2go-backend/rest/handlers/user"
+	"plan2go-backend/rest/handlers/weather"
 	"plan2go-backend/rest/middleware"
 )
 
@@ -22,9 +23,10 @@ func Serve() {
 	cnf := config.GetConfig()
 	cnfMiddleWare:=middleware.NewConfigMiddleware(cnf)
 	userhandler:=user.NewHandler(*cnfMiddleWare,userRepo)
+	weatherHandler:=weather.NewHandler()
 
 	
-	server:=rest.NewServer(cnf, userhandler)
+	server:=rest.NewServer(cnf, userhandler,weatherHandler)
 	server.Start()
 	
 }
