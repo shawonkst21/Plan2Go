@@ -6,13 +6,13 @@ const UserLogin = () => {
   const [lastName, setLastName] = useState("");
 
   useEffect(() => {
-    console.log(firstName);
+    console.log(firstName, lastName);
   }, [firstName, lastName]);
   return (
     <>
       <NameForm
-        onFirstNameChange={(value: string) => setFirstName(value)}
-        onLastNameChange={(value: string) => setLastName(value)}
+        onFirstNameChange={setFirstName}
+        onLastNameChange={setLastName}
       />
     </>
   );
