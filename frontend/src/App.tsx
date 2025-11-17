@@ -1,6 +1,13 @@
+import { useEffect, useState } from "react";
 import UserLogin from "./components/login/UserLogin";
 
 const App = () => {
+  const [token, setToken] = useState("");
+  const [uid, setUid] = useState("");
+
+  useEffect(() => {
+    console.log(token, uid);
+  }, [token, uid]);
   return (
     <>
       <div
@@ -13,7 +20,7 @@ const App = () => {
       >
         <div style={{ padding: "20px", background: "#eee" }}>
           {/* work section */}
-          <UserLogin />
+          <UserLogin onValidUID={setUid} onValidToken={setToken} />
         </div>
       </div>
     </>

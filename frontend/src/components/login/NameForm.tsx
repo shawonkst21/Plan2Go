@@ -5,7 +5,7 @@ interface Props {
 
 const NameForm = ({ onFirstNameChange, onLastNameChange }: Props) => {
   return (
-    <div className="row g-3">
+    <div className="row g-3 mb-4">
       <div className="col">
         <input
           type="text"
