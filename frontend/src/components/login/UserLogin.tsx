@@ -1,23 +1,19 @@
-import { useState, type ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 import NameForm from "./NameForm";
 
-interface Props {
-  name: (firstName: string, lastName: string) => void;
-}
-const UserLogin = ({ name }: Props) => {
+const UserLogin = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+
+  useEffect(() => {
+    console.log(firstName);
+  }, [firstName, lastName]);
   return (
     <>
       <NameForm
-        onFirstNameChange={(e: ChangeEvent<HTMLInputElement>) =>
-          setFirstName(e.target.value)
-        }
-        onLastNameChange={(e: ChangeEvent<HTMLInputElement>) =>
-          setLastName(e.target.value)
-        }
+        onFirstNameChange={(value: string) => setFirstName(value)}
+        onLastNameChange={(value: string) => setLastName(value)}
       />
-      {name(firstName, lastName)}
     </>
   );
 };

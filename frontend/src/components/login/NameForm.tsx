@@ -1,8 +1,6 @@
-import type { ChangeEvent } from "react";
-
 interface Props {
-  onFirstNameChange: (e: ChangeEvent<HTMLInputElement>) => void;
-  onLastNameChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  onFirstNameChange: (value: string) => void;
+  onLastNameChange: (value: string) => void;
 }
 
 const NameForm = ({ onFirstNameChange, onLastNameChange }: Props) => {
@@ -14,7 +12,7 @@ const NameForm = ({ onFirstNameChange, onLastNameChange }: Props) => {
           className="form-control"
           placeholder="First name"
           aria-label="First name"
-          onChange={onFirstNameChange}
+          onChange={(e) => onFirstNameChange(e.target.value)}
         />
       </div>
       <div className="col">
@@ -23,7 +21,7 @@ const NameForm = ({ onFirstNameChange, onLastNameChange }: Props) => {
           className="form-control"
           placeholder="Last name"
           aria-label="Last name"
-          onChange={onLastNameChange}
+          onChange={(e) => onLastNameChange(e.target.value)}
         />
       </div>
     </div>
