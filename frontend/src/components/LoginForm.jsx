@@ -3,12 +3,12 @@ import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 
 const LoginForm = ({ onSwitchToRegister }) => {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,92 +25,77 @@ const LoginForm = ({ onSwitchToRegister }) => {
 
   return (
     <form
-      className="w-full max-w-md mx-auto p-6 bg-black/50 backdrop-blur-md rounded-2xl shadow-2xl
-                 border border-gray-800 text-white"
       onSubmit={handleSubmit}
+      className="relative w-full max-w-md mx-auto p-8 bg-gradient-to-br from-blue-400/30 to-green-300/20 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 text-white animate-fade-in"
     >
-      <h2 className="text-3xl font-extrabold text-center mb-5">
-        Welcome Back 🌌
+      <h2 className="text-3xl font-bold text-center mb-6 drop-shadow-md">
+        Welcome Back 🌄
       </h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-700/20 text-red-200 rounded border border-red-800/40">
+        <div className="mb-4 p-3 bg-red-600/30 rounded-xl text-red-100 border border-red-700/30 text-center">
           {error}
         </div>
       )}
 
-      <div className="space-y-5">
-        <div>
-          <label className="block text-sm font-medium mb-1 text-gray-200/90">
-            Email
-          </label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-3 h-5 w-5 text-indigo-300/90" />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg bg-transparent text-gray-100
-                         placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-indigo-500
-                         focus:border-transparent transition"
-              placeholder="you@example.com"
-              required
-              autoComplete="username"
-            />
-          </div>
+      <div className="space-y-4">
+        <div className="relative">
+          <Mail className="absolute left-3 top-3 h-5 w-5 text-white/80" />
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            required
+            className="w-full pl-10 pr-4 py-3 rounded-xl bg-white/10 placeholder-white/50 border border-white/30 focus:ring-2 focus:ring-blue-400 transition outline-none"
+          />
         </div>
 
-        <div>
-          <label className="block text-sm font-medium mb-1 text-gray-200/90">
-            Password
-          </label>
-          <div className="relative">
-            <Lock className="absolute left-3 top-3 h-5 w-5 text-indigo-300/90" />
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full pl-10 pr-12 py-2 rounded-lg bg-transparent text-gray-100
-                         placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-indigo-500
-                         focus:border-transparent transition"
-              placeholder="••••••••"
-              required
-              autoComplete="current-password"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-3 text-indigo-200 hover:text-white transition"
-            >
-              {showPassword ? (
-                <EyeOff className="h-5 w-5" />
-              ) : (
-                <Eye className="h-5 w-5" />
-              )}
-            </button>
-          </div>
+        <div className="relative">
+          <Lock className="absolute left-3 top-3 h-5 w-5 text-white/80" />
+          <input
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            required
+            className="w-full pl-10 pr-12 py-3 rounded-xl bg-white/10 placeholder-white/50 border border-white/30 focus:ring-2 focus:ring-blue-400 transition outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-3 text-white/70 hover:text-white transition"
+          >
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" />
+            ) : (
+              <Eye className="h-5 w-5" />
+            )}
+          </button>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 text-white py-2 rounded-xl
-                     shadow-lg hover:brightness-110 transform hover:scale-[1.01] transition disabled:opacity-60"
+          className="w-full py-3 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-xl font-semibold shadow-lg hover:scale-105 transition transform disabled:opacity-50"
         >
           {loading ? "Logging in..." : "Login"}
         </button>
       </div>
 
-      <p className="text-center mt-4 text-sm text-gray-300/90">
+      <p className="text-center mt-5 text-white/80">
         Don't have an account?{" "}
         <button
-          type="button"
           onClick={onSwitchToRegister}
-          className="text-amber-300 hover:underline"
+          className="text-yellow-300 hover:underline"
         >
           Register
         </button>
       </p>
+
+      {/* Floating sparkle animation */}
+      <span className="absolute top-2 left-2 w-2 h-2 bg-white/70 rounded-full animate-pulse"></span>
+      <span className="absolute bottom-4 right-6 w-3 h-3 bg-white/50 rounded-full animate-bounce"></span>
     </form>
   );
 };
