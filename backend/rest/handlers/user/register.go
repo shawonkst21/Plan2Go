@@ -34,5 +34,8 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	cnf := config.GetConfig()
 	token, _ := util.GenerateToken(cnf.Jwt_SecretKey, createdUser.Email)
 
-	util.SendData(w, map[string]string{"token": token}, http.StatusCreated)
+	util.SendData(w, map[string]string{
+		"message": "User created successfully",
+		"token": token,
+		}, http.StatusCreated)
 }

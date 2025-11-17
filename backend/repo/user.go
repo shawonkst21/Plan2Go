@@ -4,9 +4,12 @@ import "database/sql"
 
 type User struct {
 	ID       int    `json:"id"`
-	Username string `json:"username"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Phone     string `json:"phone"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Photo    string `json:"photo"`
 }
 
 type UserRepo interface {
@@ -29,11 +32,11 @@ func NewUserRepo(dbCon *sql.DB) UserRepo {
 func (r *userRepo) CreateUser(user User) (*User, error) {
 
 	query := `
-		INSERT INTO users (username, email, password)
-		VALUES (?, ?, ?)
+		INSERT INTO users (first_name, last_name, phone, email, password, photo)
+		VALUES (?, ?, ?, ?, ?, ?)
 	`
 
-	result, err := r.dbCon.Exec(query, user.Username, user.Email, user.Password)
+	result, err := r.dbCon.Exec(query, user.FirstName, user.LastName, user.Phone, user.Email, user.Password, user.Photo)
 	if err != nil {
 		return nil, err
 	}
@@ -45,9 +48,11 @@ func (r *userRepo) CreateUser(user User) (*User, error) {
 	user.ID = int(id)
 	return &user, nil
 }
+
+
 func (r *userRepo) GetUserByEmail(email string) (*User, error) {
 	query := `
-		SELECT id, username, email, password
+		SELECT id, first_name, last_name, phone, email, password, photo
 		FROM users
 		WHERE email = ?
 		LIMIT 1
@@ -56,9 +61,12 @@ func (r *userRepo) GetUserByEmail(email string) (*User, error) {
 	user := &User{}
 	err := r.dbCon.QueryRow(query, email).Scan(
 		&user.ID,
-		&user.Username,
+		&user.FirstName,
+		&user.LastName,
+		&user.Phone,
 		&user.Email,
 		&user.Password,
+		&user.Photo,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
