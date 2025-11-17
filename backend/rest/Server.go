@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"plan2go-backend/config"
+	"plan2go-backend/rest/handlers/plan"
 	"plan2go-backend/rest/handlers/user"
 	"plan2go-backend/rest/handlers/weather"
 	"plan2go-backend/rest/middleware"
@@ -13,15 +14,17 @@ import (
 )
 type Server struct {
 	cnf *config.Config
-	userHandler *user.Handler
+	userHandler *user.Handler	
 	weatherHandler *weather.Handler
+	planHandler *plan.PlanHandler
 	
 }
-func NewServer(cnf *config.Config, userHandler *user.Handler, weatherHandler *weather.Handler) *Server {
+func NewServer(cnf *config.Config, userHandler *user.Handler, weatherHandler *weather.Handler, planHandler *plan.PlanHandler) *Server {
 	return &Server{
 		cnf: cnf,
 		userHandler: userHandler,
 		weatherHandler: weatherHandler,
+		planHandler: planHandler,
 	}
 }
 	
@@ -32,6 +35,7 @@ func (server *Server) Start() {
 	
 	server.userHandler.RegisterRoutes(mux,manager)
 	server.weatherHandler.WeatherRoutes(mux,manager)
+	server.planHandler.PlanRoutes(mux,manager)
 
 	adrr := ":" + strconv.Itoa(server.cnf.HttpPort)
 	fmt.Println("Server is running on port", adrr)
