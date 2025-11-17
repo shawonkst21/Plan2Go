@@ -12,6 +12,7 @@ type Config struct{
 	ServiceName string
 	HttpPort int
 	Jwt_SecretKey string
+	OpenWeatherApiKey string
 }
 var configuration *Config
 func LoadConfig() {
@@ -45,10 +46,17 @@ func LoadConfig() {
 		fmt.Println("JWT_SECRETKEY not set in .env file")
 		os.Exit(1)	
 	 }
+	 openWeatherApiKey:=os.Getenv("OPENWEATHER_API_KEY")
+	 if openWeatherApiKey==""{
+		fmt.Println("OPENWEATHER_APIKEY not set in .env file")
+		os.Exit(1)	
+	 }
 	 configuration=&Config{
 		Version:version,
 		ServiceName:serviceName,
 		HttpPort:httpPortInt,
+		Jwt_SecretKey: jwtSecretkey,
+		OpenWeatherApiKey: openWeatherApiKey,
 	}
 }
 func GetConfig() *Config{
