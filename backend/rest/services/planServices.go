@@ -1,61 +1,112 @@
 package services
 
 import (
-    "context"
-    "encoding/json"
-    "fmt"
+	"context"
+	"encoding/json"
+	"fmt"
 
-    "google.golang.org/genai"
+	"google.golang.org/genai"
 )
 
 type PlanService struct {
-    client *genai.Client
+	client *genai.Client
 }
 
 func NewPlanService(client *genai.Client) *PlanService {
-    return &PlanService{client: client}
+	return &PlanService{client: client}
 }
 
-func (p *PlanService) GenerateTourPlan(ctx context.Context, district string, days int) (map[string]interface{}, error) {
-    prompt := fmt.Sprintf(`
-You are a Bangladesh tour planning AI.
-User selected district: %s.
-User wants: %d days trip.
+// GenerateTourPlan generates a travel plan using Gemini and assigns working Picsum placeholder images
+func (p *PlanService) GenerateTourPlan(ctx context.Context,
+	division string, district string, budget string, locationType string, days int) (map[string]interface{}, error) {
 
-Return ONLY JSON. NO explanation.
+	// Gemini prompt: no mention of images at all
+	prompt := fmt.Sprintf(`
+You are an expert Bangladesh travel recommendation AI.
+
+Use ALL the following user preferences:
+
+Division: %s
+District: %s
+Trip Duration: %d days
+Budget Type: %s            (economical | normal | luxury)
+Preferred Location Type: %s (chill | nature | urban | mountains)
+
+Your tasks:
+1. Recommend the BEST tourist locations inside the district.
+2. Recommendations must be based on:
+   - Expected weather for the next %d days
+   - User's budget type
+   - User's preferred location type
+   - Accessibility and safety
+   - Experience quality during that weather
+3. Weather MUST influence:
+   - Which locations you choose
+   - Accessories list
+   - Outdoor vs indoor preference
+
+Accessories Rules:
+- Include practical items for the location, weather, and trip type.
+- Examples: raincoat, sunglasses, water bottle, camera, hiking shoes.
+
+STRICT OUTPUT RULES:
+- Return ONLY valid JSON of the format given below.
+- No explanation, no extra text, no markdown.
+- MUST strictly match the JSON schema below.
+- No trailing commas.
+- Provide 4-7 locations.
+- rating must be between 3.5 and 5.
+- accessories must be appropriate for the weather and activities.
+
 JSON Format:
 {
+  "division": "",
   "district": "",
-  "total_days": 0,
-  "itinerary": [
+  "days": 0,
+  "budget": "",
+  "location_type": "",
+  "weather_considered": true,
+  "locations": [
     {
-      "day": 1,
-      "places": [],
-      "food": []
+      "name": "",
+      "description": "",
+      "activities": [],
+      "rating": 0,
+      "accessories": []
     }
-  ],
-  "estimated_budget": "",
-  "accessories": []
+  ]
 }
-`, district, days)
+`, division, district, days, budget, locationType, days)
 
-    result, err := p.client.Models.GenerateContent(
-        ctx,
-        "gemini-2.0-flash",
-        genai.Text(prompt),
-        &genai.GenerateContentConfig{
-            ResponseMIMEType: "application/json",
-        },
-    )
-    if err != nil {
-        return nil, err
-    }
+	// Call Gemini API
+	result, err := p.client.Models.GenerateContent(
+		ctx,
+		"gemini-2.0-flash",
+		genai.Text(prompt),
+		&genai.GenerateContentConfig{
+			ResponseMIMEType: "application/json",
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
 
-    jsonText := result.Text()
-    var output map[string]interface{}
-    if err := json.Unmarshal([]byte(jsonText), &output); err != nil {
-        return nil, fmt.Errorf("failed to parse JSON: %v\nraw: %s", err, jsonText)
-    }
+	// Parse JSON response
+	jsonText := result.Text()
+	var output map[string]interface{}
+	if err := json.Unmarshal([]byte(jsonText), &output); err != nil {
+		return nil, fmt.Errorf("failed to parse JSON: %v\nraw: %s", err, jsonText)
+	}
 
-    return output, nil
+	//Assign working placeholder images using Lorem Picsum
+	if locations, ok := output["locations"].([]interface{}); ok {
+		for i, loc := range locations {
+			if locMap, ok := loc.(map[string]interface{}); ok {
+				// Forcefully overwrite any existing image_url with Picsum placeholder
+				locMap["image_url"] = fmt.Sprintf("https://picsum.photos/1600/900?%s&random=%d", locationType, i)
+			}
+		}
+	}
+
+	return output, nil
 }
