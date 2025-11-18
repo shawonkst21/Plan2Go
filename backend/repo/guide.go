@@ -18,6 +18,7 @@ type Guide struct {
 
 type GuideRepo interface {
 	GetGuidesByCity(city string) ([]Guide, error)
+	CreateGuide(g Guide) (*Guide, error)
 }
 
 type guideRepo struct {
@@ -65,4 +66,26 @@ func (r *guideRepo) GetGuidesByCity(city string) ([]Guide, error) {
 	}
 
 	return guides, nil
+}
+
+func (r *guideRepo) CreateGuide(g Guide) (*Guide, error) {
+	query := `
+		INSERT INTO guide 
+		(user_id, city, hourly_fee, rating, languages, experience_years, bio, available, created_at, updated_at)
+		VALUES (?, ?, ?, 0, ?, ?, ?, true, NOW(), NOW())
+	`
+	result, err := r.dbCon.Exec(query, g.UserID, g.City, g.HourlyFee, g.Languages, g.ExperienceYears, g.Bio)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	g.GuideID = int(id)
+	g.Rating = 0
+	g.Available = true
+	return &g, nil
 }

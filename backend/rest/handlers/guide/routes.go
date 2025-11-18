@@ -13,4 +13,10 @@ func (h *GuideHandler) GuideRoutes(mux *http.ServeMux, manager *middleware.Manag
 			http.HandlerFunc(h.GetGuidesByCity),
 		),
 	)
+	mux.Handle(
+		"POST /users/guide/register",
+		manager.With(
+			http.HandlerFunc(h.CreateGuide),
+		),
+	)
 }
