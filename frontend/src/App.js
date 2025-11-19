@@ -14,6 +14,7 @@ import TourPlanning from './pages/TourPlanning';
 import TourMonitor from './pages/TourMonitor';
 import Maintenance from './pages/Maintenance';
 import TourGuides from './pages/TourGuides';
+import VerifyOTP from './pages/VerifyOTP';
 
 function App() {
   return (
@@ -44,6 +45,15 @@ function App() {
               element={
                 <PublicRoute>
                   <Register />
+                </PublicRoute>
+              }
+            />
+            {/* OTP Verification Route */}
+            <Route
+              path="/verify-otp"
+              element={
+                <PublicRoute>
+                  <VerifyOTP />
                 </PublicRoute>
               }
             />
@@ -100,4 +110,3 @@ function App() {
 }
 
 export default App;
-

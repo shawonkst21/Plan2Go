@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"plan2go-backend/config"
 	"plan2go-backend/repo"
 	"plan2go-backend/util"
 )
@@ -48,16 +49,24 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	// Send OTP email
 	err = util.SendOTPEmail(createdUser.Email, otp)
-
 	if err != nil {
 		fmt.Println("Warning: failed to send OTP email:", err)
-		// optionally continue, user can retry verification
+		// still continue, user can retry later
+	}
+
+	// 🔥 Generate JWT token (even though user is not verified yet)
+	token, err := util.GenerateToken(config.GetConfig().Jwt_SecretKey, createdUser.Email)
+	if err != nil {
+		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		return
 	}
 
 	// Respond
 	util.SendData(w, map[string]interface{}{
-		"success": true,
-		"user":    createdUser,
-		"message": "User created successfully. OTP sent to email.",
+		"success":     true,
+		"user":        createdUser,
+		"token":       token,
+		"requiresOTP": true,
+		"message":     "User created successfully. OTP sent to email.",
 	}, http.StatusCreated)
 }

@@ -26,7 +26,7 @@ func GenerateOTP() string {
 func SendOTPEmail(toEmail, otp string) error {
 	auth := smtp.PlainAuth(
 		"",
-		"ashrafulislamraju@gmail.com",
+		"ashrafulialamraju@gmail.com",
 		"uvanmhqruwesrnhc",
 		"smtp.gmail.com",
 	)
