@@ -12,6 +12,17 @@ const TourGuides = () => {
   const [serverError, setServerError] = useState("");
   const [numDays, setNumDays] = useState(1);
 
+  const divisions = [
+    "Dhaka",
+    "Chittagong",
+    "Khulna",
+    "Barishal",
+    "Sylhet",
+    "Rajshahi",
+    "Rangpur",
+    "Mymensingh",
+  ];
+
   // Fetch all guides on page load
   useEffect(() => {
     const fetchAllGuides = async () => {
@@ -91,18 +102,19 @@ const TourGuides = () => {
             </div>
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
-                Filter by Location
+                Filter by Division
               </label>
               <select
                 value={selectedLocation}
                 onChange={(e) => setSelectedLocation(e.target.value)}
                 className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition bg-white"
               >
-                <option value="">All Locations</option>
-                <option value="Cox's Bazar">Cox's Bazar</option>
-                <option value="Sylhet">Sylhet</option>
-                <option value="Dhaka">Dhaka</option>
-                <option value="Bandarban">Bandarban</option>
+                <option value="">All Divisions</option>
+                {divisions.map((div) => (
+                  <option key={div} value={div}>
+                    {div}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -136,6 +148,14 @@ const TourGuides = () => {
                         <span className="mr-1">📍</span>
                         {guide.city}
                       </p>
+                      {guide.languages && (
+                        <p className="text-gray-600 text-sm flex items-center mt-1">
+                          <span className="mr-1">🗣️</span>
+                          {Array.isArray(guide.languages)
+                            ? guide.languages.join(", ")
+                            : String(guide.languages)}
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

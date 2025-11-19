@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
-
-
 const Maintenance = () => {
   // Security state
   const [oldPassword, setOldPassword] = useState("");
@@ -10,7 +8,6 @@ const Maintenance = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [pwLoading, setPwLoading] = useState(false);
   const [pwMessage, setPwMessage] = useState("");
-
 
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
@@ -214,7 +211,6 @@ const Maintenance = () => {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-primary-50/20 to-accent-50/10 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -351,20 +347,36 @@ const Maintenance = () => {
                 </div>
                 <div className="space-y-6">
                   <div className="grid md:grid-cols-2 gap-6">
+                    {/* City Dropdown */}
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         City <span className="text-red-500">*</span>
                       </label>
-                      <input
-                        type="text"
+                      <select
                         name="city"
                         value={guideData.city}
                         onChange={handleGuideChange}
                         required
-                        className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                        placeholder="e.g., Dhaka, Sylhet, Cox's Bazar"
-                      />
+                        className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition bg-white"
+                      >
+                        <option value="">Select Division</option>
+                        {[
+                          "Dhaka",
+                          "Chittagong",
+                          "Khulna",
+                          "Barishal",
+                          "Sylhet",
+                          "Rajshahi",
+                          "Rangpur",
+                          "Mymensingh",
+                        ].map((div) => (
+                          <option key={div} value={div}>
+                            {div}
+                          </option>
+                        ))}
+                      </select>
                     </div>
+
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Hourly Fee (BDT) <span className="text-red-500">*</span>
@@ -442,6 +454,8 @@ const Maintenance = () => {
               </div>
             )}
 
+            {/* SETTINGS, SECURITY, NOTIFICATIONS tabs remain unchanged */}
+            {/* ... (rest of your code here unchanged) */}
             {/* SETTINGS */}
             {activeTab === "settings" && (
               <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
