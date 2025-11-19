@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"plan2go-backend/config"
+	"plan2go-backend/rest/handlers/guide"
 	"plan2go-backend/rest/handlers/plan"
 	"plan2go-backend/rest/handlers/user"
 	"plan2go-backend/rest/handlers/weather"
@@ -12,30 +13,34 @@ import (
 	"plan2go-backend/util"
 	"strconv"
 )
+
 type Server struct {
-	cnf *config.Config
-	userHandler *user.Handler	
+	cnf            *config.Config
+	userHandler    *user.Handler
 	weatherHandler *weather.Handler
-	planHandler *plan.PlanHandler
-	
+	planHandler    *plan.PlanHandler
+	guideHandler   *guide.GuideHandler
 }
-func NewServer(cnf *config.Config, userHandler *user.Handler, weatherHandler *weather.Handler, planHandler *plan.PlanHandler) *Server {
+
+func NewServer(cnf *config.Config, userHandler *user.Handler, weatherHandler *weather.Handler, planHandler *plan.PlanHandler, guideHandler *guide.GuideHandler) *Server {
 	return &Server{
-		cnf: cnf,
-		userHandler: userHandler,
+		cnf:            cnf,
+		userHandler:    userHandler,
 		weatherHandler: weatherHandler,
-		planHandler: planHandler,
+		planHandler:    planHandler,
+		guideHandler:   guideHandler,
 	}
 }
-	
+
 func (server *Server) Start() {
 	manager := middleware.NewManager()
 	manager.Use(middleware.Logger)
 	mux := http.NewServeMux()
-	
-	server.userHandler.RegisterRoutes(mux,manager)
-	server.weatherHandler.WeatherRoutes(mux,manager)
-	server.planHandler.PlanRoutes(mux,manager)
+
+	server.userHandler.RegisterRoutes(mux, manager)
+	server.weatherHandler.WeatherRoutes(mux, manager)
+	server.planHandler.PlanRoutes(mux, manager)
+	server.guideHandler.GuideRoutes(mux, manager)
 
 	adrr := ":" + strconv.Itoa(server.cnf.HttpPort)
 	fmt.Println("Server is running on port", adrr)

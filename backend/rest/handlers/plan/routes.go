@@ -7,7 +7,6 @@ import (
 
 func (h *PlanHandler) PlanRoutes(mux *http.ServeMux, manager *middleware.Manager) {
 
-	
 	mux.Handle(
 		"POST /users/plan",
 		manager.With(

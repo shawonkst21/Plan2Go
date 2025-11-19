@@ -9,6 +9,7 @@ import (
 	db "plan2go-backend/infra/DB"
 	"plan2go-backend/repo"
 	"plan2go-backend/rest"
+	"plan2go-backend/rest/handlers/guide"
 	"plan2go-backend/rest/handlers/plan"
 	"plan2go-backend/rest/handlers/user"
 	"plan2go-backend/rest/handlers/weather"
@@ -19,30 +20,33 @@ import (
 )
 
 func Serve() {
-    dbcn,err:=db.ConnectDB()
-	if err!=nil{
+	dbcn, err := db.ConnectDB()
+	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-		userRepo:=repo.NewUserRepo(dbcn)
+	userRepo := repo.NewUserRepo(dbcn)
+	guideRepo := repo.NewGuideRepo(dbcn)
 
 	cnf := config.GetConfig()
 	//gemini servies
 	ctx := context.Background()
-    client, err := genai.NewClient(ctx, &genai.ClientConfig{
-        APIKey: os.Getenv("GEMINI_API_KEY"),
-    })
-    if err != nil {
-        log.Fatal(err)
-    }
-      planServices:=services.NewPlanService(client)
-	  planHandler:=plan.NewPlanHandler(planServices)
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{
+		APIKey: os.Getenv("GEMINI_API_KEY"),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	planServices := services.NewPlanService(client)
+	planHandler := plan.NewPlanHandler(planServices)
 
-	cnfMiddleWare:=middleware.NewConfigMiddleware(cnf)
-	userhandler:=user.NewHandler(*cnfMiddleWare,userRepo)
-	weatherHandler:=weather.NewHandler()
+	guideHandler := guide.NewGuideHandler(guideRepo)
 
-	server:=rest.NewServer(cnf, userhandler,weatherHandler, planHandler)
+	cnfMiddleWare := middleware.NewConfigMiddleware(cnf)
+	userhandler := user.NewHandler(*cnfMiddleWare, userRepo)
+	weatherHandler := weather.NewHandler()
+
+	server := rest.NewServer(cnf, userhandler, weatherHandler, planHandler, guideHandler)
 	server.Start()
-	
+
 }

@@ -12,7 +12,11 @@ var DB *sql.DB
 
 func ConnectDB() (*sql.DB, error) {
 	// Format: username:password@tcp(host:port)/database_name
+<<<<<<< HEAD
 	dsn := "root:@tcp(127.0.0.1:3306)/plan2go"
+=======
+	dsn := "root:@tcp(localhost:3306)/plan2go"
+>>>>>>> master
 
 	var err error
 	DB, err = sql.Open("mysql", dsn)
