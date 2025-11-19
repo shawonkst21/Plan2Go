@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"plan2go-backend/repo"
 	"plan2go-backend/util"
-	"time"
 )
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
@@ -39,10 +38,9 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	// Generate OTP
 	otp := util.GenerateOTP()
-	expiry := time.Now().Add(60 * time.Minute)
 
 	// Save OTP in DB
-	err = h.emailRepo.SaveOTP(createdUser.Email, otp, expiry)
+	err = h.emailRepo.SaveOTP(createdUser.Email, otp)
 	if err != nil {
 		http.Error(w, "Failed to generate OTP", http.StatusInternalServerError)
 		return
@@ -50,6 +48,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	// Send OTP email
 	err = util.SendOTPEmail(createdUser.Email, otp)
+
 	if err != nil {
 		fmt.Println("Warning: failed to send OTP email:", err)
 		// optionally continue, user can retry verification

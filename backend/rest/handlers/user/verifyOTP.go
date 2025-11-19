@@ -33,11 +33,11 @@ func (h *Handler) VerifyOTP(w http.ResponseWriter, r *http.Request) {
 
 	// Check OTP validity
 	valid, err := h.emailRepo.VerifyOTP(req.Email, req.OTP)
-	if err != nil {
+	if err != nil || !valid {
 		util.SendData(w, map[string]interface{}{
 			"success": false,
-			"error":   err.Error(),
-		}, http.StatusBadRequest)
+			"error":   "Invalid OTP",
+		}, http.StatusUnauthorized)
 		return
 	}
 

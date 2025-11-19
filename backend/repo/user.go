@@ -54,7 +54,7 @@ func (r *userRepo) CreateUser(user User) (*User, error) {
 
 func (r *userRepo) GetUserByEmail(email string) (*User, error) {
 	query := `
-		SELECT id, first_name, last_name, phone, email, password, photo
+		SELECT id, first_name, last_name, phone, email, password, photo, is_verified
 		FROM users
 		WHERE email = ?
 		LIMIT 1
@@ -69,6 +69,7 @@ func (r *userRepo) GetUserByEmail(email string) (*User, error) {
 		&user.Email,
 		&user.Password,
 		&user.Photo,
+		&user.IsVerified,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
