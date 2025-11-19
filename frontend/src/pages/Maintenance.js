@@ -1,7 +1,17 @@
 import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
+
+
 const Maintenance = () => {
+  // Security state
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwMessage, setPwMessage] = useState("");
+
+
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
 
@@ -150,6 +160,60 @@ const Maintenance = () => {
     { id: "security", name: "Security", icon: "🔒" },
     { id: "notifications", name: "Notifications", icon: "🔔" },
   ];
+
+  const handlePasswordChange = async () => {
+    if (newPassword !== confirmPassword) {
+      setPwMessage("New passwords do not match.");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setPwMessage("Password must be at least 6 characters.");
+      return;
+    }
+
+    setPwMessage("");
+    setPwLoading(true);
+
+    try {
+      const token = localStorage.getItem("plan2go_token");
+
+      const res = await fetch("http://localhost:8080/users/update/password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          oldPassword,
+          newPassword,
+        }),
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = { message: await res.text() };
+      }
+
+      if (!res.ok) {
+        setPwMessage(data.message || "Failed to change password.");
+        return;
+      }
+
+      setPwMessage("✅ Password changed successfully!");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      console.error(err);
+      setPwMessage("Something went wrong.");
+    } finally {
+      setPwLoading(false);
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-primary-50/20 to-accent-50/10 py-8">
@@ -431,33 +495,61 @@ const Maintenance = () => {
                 <h2 className="text-3xl font-bold text-gray-900 mb-8">
                   Security Settings
                 </h2>
+
                 <div className="space-y-8">
+                  {/* CHANGE PASSWORD */}
                   <div>
-                    <h3 className="font-bold text-gray-900 mb-6">
-                      Change Password
-                    </h3>
+                    <h3 className="font-bold text-gray-900 mb-6">Change Password</h3>
+
                     <div className="space-y-4">
-                      {[
-                        "Current Password",
-                        "New Password",
-                        "Confirm New Password",
-                      ].map((label, index) => (
-                        <input
-                          key={index}
-                          type="password"
-                          placeholder={label}
-                          className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                        />
-                      ))}
-                      <button className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-8 py-3 rounded-2xl font-semibold transition shadow-lg hover:shadow-xl">
-                        Update Password
+                      <input
+                        type="password"
+                        placeholder="Current Password"
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary-500"
+                      />
+
+                      <input
+                        type="password"
+                        placeholder="New Password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary-500"
+                      />
+
+                      <input
+                        type="password"
+                        placeholder="Confirm New Password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-primary-500"
+                      />
+
+                      {pwMessage && (
+                        <p
+                          className={`text-sm font-semibold ${pwMessage.includes("success") || pwMessage.includes("✓")
+                            ? "text-green-600"
+                            : "text-red-600"
+                            }`}
+                        >
+                          {pwMessage}
+                        </p>
+                      )}
+
+                      <button
+                        onClick={handlePasswordChange}
+                        disabled={pwLoading}
+                        className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-8 py-3 rounded-2xl font-semibold shadow-lg hover:shadow-xl disabled:opacity-50"
+                      >
+                        {pwLoading ? "Updating..." : "Update Password"}
                       </button>
                     </div>
                   </div>
+
+                  {/* TWO FACTOR */}
                   <div className="border-t border-gray-200 pt-8">
-                    <h3 className="font-bold text-gray-900 mb-4">
-                      Two-Factor Authentication
-                    </h3>
+                    <h3 className="font-bold text-gray-900 mb-4">Two-Factor Authentication</h3>
                     <div className="flex items-center justify-between">
                       <p className="text-gray-600">
                         Add an extra layer of security to your account
@@ -469,6 +561,7 @@ const Maintenance = () => {
                   </div>
                 </div>
               </div>
+
             )}
 
             {/* NOTIFICATIONS */}
