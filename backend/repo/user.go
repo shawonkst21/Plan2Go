@@ -20,6 +20,7 @@ type UserRepo interface {
 	UpdatePassword(email, HashedPassword string) (*User, error)
 	UpdateUserProfile(user *User) (*User, error)
 	UpdateUserVerification(email string, isVerified bool) (*User, error)
+	DeleteUserByEmail(email string) error
 }
 
 type userRepo struct {
@@ -144,4 +145,10 @@ func (r *userRepo) UpdateUserVerification(email string, isVerified bool) (*User,
 
 	// Return the updated user
 	return r.GetUserByEmail(email)
+}
+
+func (r *userRepo) DeleteUserByEmail(email string) error {
+	query := `DELETE FROM users WHERE email = ?`
+	_, err := r.dbCon.Exec(query, email)
+	return err
 }
