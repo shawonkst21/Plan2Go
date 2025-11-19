@@ -82,7 +82,7 @@ export const AuthProvider = ({ children }) => {
         // ✅ Don't set user yet
         // setUser(data.user);
         // localStorage.setItem('plan2go_user', JSON.stringify(data.user));
-        // localStorage.setItem('plan2go_token', data.token);
+        localStorage.setItem('plan2go_token', data.token);
 
         return { success: true, email: formData.email }; // send email to OTP page
       } else {

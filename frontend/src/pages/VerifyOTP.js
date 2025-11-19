@@ -43,20 +43,34 @@ const VerifyOTP = () => {
     const handleResend = async () => {
         setError('');
         setLoading(true);
+
         try {
+            const token = localStorage.getItem('plan2go_token');
+            if (!token) {
+                setError('No token found, please login again.');
+                setLoading(false);
+                return;
+            }
+
             const res = await fetch('http://localhost:8080/users/resend-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email }),
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
             });
+
             const data = await res.json();
+
             if (!data.success) setError(data.error || 'Failed to resend OTP');
             else alert('OTP resent successfully!');
-        } catch {
+        } catch (err) {
+            console.error(err);
             setError('Server error');
         }
+
         setLoading(false);
     };
+
 
     return (
         <div className="min-h-screen bg-black/30 backdrop-blur-sm flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">

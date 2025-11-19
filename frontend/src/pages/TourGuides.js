@@ -145,7 +145,7 @@ const TourGuides = () => {
                     <span className="text-3xl font-bold text-primary-600">
                       ৳{guide.hourly_fee}
                     </span>
-                    <span className="text-gray-600 text-sm ml-1">/day</span>
+                    <span className="text-gray-600 text-sm ml-1">/hour</span>
                   </div>
                   <button
                     onClick={() => handleBookGuide(guide)}
@@ -189,7 +189,7 @@ const TourGuides = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Number of Days
+                    Number of hours
                   </label>
                   <input
                     type="number"

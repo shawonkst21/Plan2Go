@@ -3,6 +3,7 @@ package repo
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"log"
 )
 
@@ -10,6 +11,7 @@ type EmailVerificationRepo interface {
 	SaveOTP(email, otp string) error
 	VerifyOTP(email, otp string) (bool, error)
 	DeleteOTP(email string) error
+	FetchOTP(email string) (string, error)
 }
 
 type emailVerificationRepo struct {
@@ -61,6 +63,27 @@ func (r *emailVerificationRepo) VerifyOTP(email, otp string) (bool, error) {
 	}
 
 	return true, nil
+}
+
+// FetchOTP returns the OTP stored for the given email
+func (r *emailVerificationRepo) FetchOTP(email string) (string, error) {
+	query := `
+		SELECT otp
+		FROM email_verification
+		WHERE email = ?
+		LIMIT 1
+	`
+
+	var storedOTP string
+	err := r.dbCon.QueryRow(query, email).Scan(&storedOTP)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", fmt.Errorf("no OTP found for this email")
+		}
+		return "", err
+	}
+
+	return storedOTP, nil
 }
 
 // DeleteOTP removes OTP after successful verification

@@ -143,7 +143,7 @@ const Maintenance = () => {
           yearsOfExperience: "",
         });
       } else {
-        alert("User Already Exist As Guide For The city. Please try again.");
+        alert("User Is Already Registered As A Guide. Please try again.");
       }
     } catch (err) {
       console.error("Error registering guide:", err);
