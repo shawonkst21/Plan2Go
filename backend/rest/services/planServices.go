@@ -20,49 +20,42 @@ func NewPlanService(client *genai.Client) *PlanService {
 func (p *PlanService) GenerateTourPlan(ctx context.Context,
 	division string, district string, budget string, locationType string, days int) (map[string]interface{}, error) {
 
-	// Updated Gemini prompt: includes hotels and restaurants
+	// Updated Gemini prompt: includes hotels, restaurants, and daily itinerary
 	prompt := fmt.Sprintf(`
 You are an expert Bangladesh travel recommendation AI.
 
-Use ALL the following user preferences:
+User Preferences:
+- Division: %s
+- District: %s
+- Trip Duration: %d days
+- Budget Type: %s (economical | normal | luxury)
+- Preferred Location Type: %s (chill | nature | urban | mountains)
 
-Division: %s
-District: %s
-Trip Duration: %d days
-Budget Type: %s            (economical | normal | luxury)
-Preferred Location Type: %s (chill | nature | urban | mountains)
+Tasks:
+1. Recommend 4-7 tourist locations in the district.
+2. For each location provide:
+   - Name
+   - Description
+   - Activities
+   - Rating
+   - Accessories
+   - Nearby hotels (1-3) with ratings
+   - Nearby restaurants (1-3) with ratings
+   - Image URL
+3. Generate a DAILY ITINERARY:
+   - Divide activities among days logically
+   - Include weather type for each day (Sunny, Rainy, Cloudy, etc.)
+   - Include activities that suit that day's weather
+   - Format: "Day 1": {"weather": "Sunny", "activities": ["activity1", "activity2"]}
 
-Your tasks:
-1. Recommend the BEST tourist locations inside the district.
-2. For each location, provide:
-   - Nearby hotels suitable for the user's budget
-   - Famous restaurants nearby
-3. Recommendations must be based on:
-   - Expected weather for the next %d days
-   - User's budget type
-   - User's preferred location type
-   - Accessibility and safety
-   - Experience quality during that weather
-4. Weather MUST influence:
-   - Which locations you choose
-   - Accessories list
-   - Outdoor vs indoor preference
+Consider:
+- Weather for next %d days affects activities
+- Budget affects hotels/restaurants
+- Location type affects activities
+- Accessibility and safety
 
-Accessories Rules:
-- Include practical items for the location, weather, and trip type.
-- Examples: raincoat, sunglasses, water bottle, camera, hiking shoes.
+STRICT JSON OUTPUT ONLY:
 
-STRICT OUTPUT RULES:
-- Return ONLY valid JSON of the format given below.
-- No explanation, no extra text, no markdown.
-- MUST strictly match the JSON schema below.
-- No trailing commas.
-- Provide 4-7 locations.
-- rating must be between 3.5 and 5.
-- accessories must be appropriate for the weather and activities.
-- For hotels and restaurants, provide 1-3 options each per location.
-
-JSON Format:
 {
   "division": "",
   "district": "",
@@ -77,14 +70,15 @@ JSON Format:
       "activities": [],
       "rating": 0,
       "accessories": [],
-      "hotels_nearby": [
-        {"name": "", "rating": 0}
-      ],
-      "restaurants_nearby": [
-        {"name": "", "rating": 0}
-      ]
+      "hotels_nearby": [{"name": "", "rating": 0}],
+      "restaurants_nearby": [{"name": "", "rating": 0}],
+      "image_url": ""
     }
-  ]
+  ],
+  "daily_itinerary": {
+    "Day 1": {"weather": "", "activities": []},
+    "Day 2": {"weather": "", "activities": []}
+  }
 }
 `, division, district, days, budget, locationType, days)
 
