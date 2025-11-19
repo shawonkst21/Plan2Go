@@ -44,8 +44,8 @@ const Dashboard = () => {
             Welcome back, {user?.name}! 👋
           </h1>
           <p className="text-xl text-gray-600">
-            {user?.userType === 'guide' 
-              ? 'Manage your guide services and help travelers explore' 
+            {user?.userType === 'guide'
+              ? 'Manage your guide services and help travelers explore'
               : 'Ready to plan your next amazing adventure?'}
           </p>
         </div>
@@ -82,7 +82,7 @@ const Dashboard = () => {
             <div className="text-sm font-semibold text-gray-700">Active Tours</div>
             <div className="text-xs text-gray-500 mt-1">Start planning your first trip!</div>
           </div>
-          
+
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-400 to-purple-600 rounded-2xl flex items-center justify-center">
@@ -93,7 +93,7 @@ const Dashboard = () => {
             <div className="text-sm font-semibold text-gray-700">Booked Guides</div>
             <div className="text-xs text-gray-500 mt-1">Find your perfect guide</div>
           </div>
-          
+
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-accent-400 to-accent-500 rounded-2xl flex items-center justify-center">

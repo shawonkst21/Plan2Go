@@ -22,11 +22,9 @@ export const AuthProvider = ({ children }) => {
         if (parsedUser && typeof parsedUser === 'object') {
           setUser(parsedUser);
         } else {
-          // Invalid object
           localStorage.removeItem('plan2go_user');
         }
       } else {
-        // Remove corrupted entry
         localStorage.removeItem('plan2go_user');
       }
     } catch (err) {
@@ -35,7 +33,6 @@ export const AuthProvider = ({ children }) => {
     }
     setLoading(false);
   }, []);
-
 
   const login = async (email, password) => {
     try {
@@ -49,7 +46,6 @@ export const AuthProvider = ({ children }) => {
       if (data.success && data.token) {
         localStorage.setItem('plan2go_token', data.token);
 
-        // Fetch user profile using token
         const profileRes = await fetch('http://localhost:8080/users/profile', {
           headers: { Authorization: `Bearer ${data.token}` },
         });
@@ -65,7 +61,6 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: 'Server error. Please try again.' };
     }
   };
-
 
   const register = async (formData) => {
     try {
@@ -86,7 +81,7 @@ export const AuthProvider = ({ children }) => {
       if (data.success) {
         setUser(data.user);
         localStorage.setItem('plan2go_user', JSON.stringify(data.user));
-        localStorage.setItem('plan2go_token', data.token); // if backend returns JWT
+        localStorage.setItem('plan2go_token', data.token);
         return { success: true };
       } else {
         return { success: false, error: data.error };
@@ -96,21 +91,28 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-
   const logout = () => {
     setUser(null);
     localStorage.removeItem('plan2go_user');
+    localStorage.removeItem('plan2go_token');
+  };
+
+  // --- NEW: update user profile ---
+  const updateUserProfile = (updatedUser) => {
+    setUser(prev => ({ ...prev, ...updatedUser }));
+    localStorage.setItem('plan2go_user', JSON.stringify({ ...user, ...updatedUser }));
   };
 
   const value = {
     user,
+    setUser,
     login,
     register,
     logout,
     loading,
-    isAuthenticated: !!user
+    isAuthenticated: !!user,
+    updateUserProfile
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-

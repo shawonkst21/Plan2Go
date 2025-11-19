@@ -7,8 +7,6 @@ const TourPlanning = () => {
     duration: '',
     budget: 'normal',
     locationType: 'nature',
-    places: [],
-    accessories: []
   });
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState(null);
@@ -16,7 +14,7 @@ const TourPlanning = () => {
   const divisions = ['Dhaka', 'Chittagong', 'Sylhet', 'Rajshahi', 'Khulna', 'Barisal', 'Rangpur', 'Mymensingh'];
   const districts = {
     'Dhaka': ['Dhaka', 'Gazipur', 'Narayanganj', 'Tangail'],
-    'Chittagong': ['Chittagong', 'Cox\'s Bazar', 'Bandarban', 'Rangamati'],
+    'Chittagong': ['Chittagong', "Cox's Bazar", 'Bandarban', 'Rangamati'],
     'Sylhet': ['Sylhet', 'Moulvibazar', 'Habiganj', 'Sunamganj'],
     'Rajshahi': ['Rajshahi', 'Bogura', 'Pabna', 'Naogaon'],
     'Khulna': ['Khulna', 'Jessore', 'Satkhira', 'Bagerhat'],
@@ -27,17 +25,12 @@ const TourPlanning = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const generateRecommendations = async () => {
     setLoading(true);
-
     try {
-      // Prepare request body
       const requestBody = {
         division: formData.division,
         district: formData.district,
@@ -46,55 +39,40 @@ const TourPlanning = () => {
         locationType: formData.locationType,
       };
 
-      // Call backend API
       const response = await fetch('http://localhost:8080/users/plan', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to fetch travel plan from backend');
-      }
+      if (!response.ok) throw new Error('Failed to fetch travel plan');
 
       const data = await response.json();
 
-      // If backend provides accessories per location, merge them or use a default list
+      // Combine accessories from all locations
       let accessories = [];
       if (data.locations && data.locations.length > 0) {
         data.locations.forEach(loc => {
-          if (loc.accessories) {
-            accessories = [...new Set([...accessories, ...loc.accessories])];
-          }
+          if (loc.accessories) accessories = [...new Set([...accessories, ...loc.accessories])];
         });
       }
 
-      // Build daily plan dynamically
-      const dailyPlan = data.locations
-        .map((loc, idx) => `Day ${idx + 1}: Explore ${loc.name}`)
-        .join('\n');
-
-      // Update state
       setResults({
         places: data.locations,
         accessories: accessories,
-        dailyPlan: dailyPlan,
+        dailyPlan: data.daily_itinerary, // contains weather + activities
       });
-
     } catch (error) {
       console.error(error);
       setResults({
         places: [],
         accessories: [],
-        dailyPlan: 'Failed to fetch plan. Please try again.',
+        dailyPlan: {},
       });
     } finally {
       setLoading(false);
     }
   };
-
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -108,25 +86,16 @@ const TourPlanning = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-10">
           <h1 className="text-5xl font-bold text-gray-900 mb-3">AI Tour Planning ✨</h1>
-          <p className="text-xl text-gray-600">
-            Tell us your preferences and get personalized travel recommendations
-          </p>
+          <p className="text-xl text-gray-600">Tell us your preferences and get personalized travel recommendations</p>
         </div>
 
         <div className="grid lg:grid-cols-2 gap-8">
-          {/* Form Section */}
+          {/* Form */}
           <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
-            <div className="flex items-center mb-6">
-              <div className="w-12 h-12 bg-gradient-to-br from-primary-400 to-primary-600 rounded-2xl flex items-center justify-center mr-4">
-                <span className="text-2xl">✈️</span>
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900">Trip Details</h2>
-            </div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Trip Details</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Division *
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Division *</label>
                 <select
                   name="division"
                   value={formData.division}
@@ -135,16 +104,12 @@ const TourPlanning = () => {
                   className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition bg-white"
                 >
                   <option value="">Select Division</option>
-                  {divisions.map(div => (
-                    <option key={div} value={div}>{div}</option>
-                  ))}
+                  {divisions.map(div => <option key={div} value={div}>{div}</option>)}
                 </select>
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  District *
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">District *</label>
                 <select
                   name="district"
                   value={formData.district}
@@ -161,9 +126,7 @@ const TourPlanning = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Trip Duration (Days) *
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">Trip Duration (Days) *</label>
                 <input
                   type="number"
                   name="duration"
@@ -177,20 +140,16 @@ const TourPlanning = () => {
                 />
               </div>
 
+              {/* Budget */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Budget
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">Budget</label>
                 <div className="grid grid-cols-3 gap-3">
                   {['economical', 'normal', 'luxury'].map(budget => (
                     <button
                       key={budget}
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, budget }))}
-                      className={`px-4 py-3 rounded-2xl border-2 transition font-medium ${formData.budget === budget
-                        ? 'border-primary-500 bg-primary-50 text-primary-700'
-                        : 'border-gray-200 hover:border-primary-300 text-gray-700'
-                        }`}
+                      className={`px-4 py-3 rounded-2xl border-2 transition font-medium ${formData.budget === budget ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-200 hover:border-primary-300 text-gray-700'}`}
                     >
                       {budget.charAt(0).toUpperCase() + budget.slice(1)}
                     </button>
@@ -198,20 +157,16 @@ const TourPlanning = () => {
                 </div>
               </div>
 
+              {/* Location Type */}
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Location Type
-                </label>
+                <label className="block text-sm font-semibold text-gray-700 mb-3">Location Type</label>
                 <div className="grid grid-cols-2 gap-3">
                   {['chill', 'nature', 'urban', 'mountains'].map(type => (
                     <button
                       key={type}
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, locationType: type }))}
-                      className={`px-4 py-3 rounded-2xl border-2 transition font-medium ${formData.locationType === type
-                        ? 'border-primary-500 bg-primary-50 text-primary-700'
-                        : 'border-gray-200 hover:border-primary-300 text-gray-700'
-                        }`}
+                      className={`px-4 py-3 rounded-2xl border-2 transition font-medium ${formData.locationType === type ? 'border-primary-500 bg-primary-50 text-primary-700' : 'border-gray-200 hover:border-primary-300 text-gray-700'}`}
                     >
                       {type.charAt(0).toUpperCase() + type.slice(1)}
                     </button>
@@ -229,10 +184,11 @@ const TourPlanning = () => {
             </form>
           </div>
 
-          {/* Results Section */}
+          {/* Results */}
           <div className="space-y-6">
             {results && (
               <>
+                {/* Recommended Places */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                     <span className="mr-3">📍</span> Recommended Places
@@ -244,14 +200,11 @@ const TourPlanning = () => {
                           <div className="flex-1">
                             <div className="flex items-center mb-2">
                               <span className="w-8 h-8 bg-primary-500 text-white rounded-full flex items-center justify-center text-sm font-bold mr-3">
-                                {place.sequence}
+                                {index + 1}
                               </span>
                               <h3 className="font-bold text-lg text-gray-900">{place.name}</h3>
                             </div>
                             <p className="text-gray-600 ml-11 mb-2">{place.description}</p>
-                            <p className="text-sm text-primary-600 ml-11 font-medium">
-                              ⏰ Best time: {place.bestTime}
-                            </p>
                           </div>
                           <div className="flex items-center text-yellow-500 ml-4">
                             <span className="font-bold text-lg">{place.rating}</span>
@@ -265,6 +218,7 @@ const TourPlanning = () => {
                   </div>
                 </div>
 
+                {/* Packing Suggestions */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                     <span className="mr-3">🎒</span> Packing Suggestions
@@ -283,14 +237,22 @@ const TourPlanning = () => {
                   </div>
                 </div>
 
+                {/* Daily Itinerary */}
                 <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
                   <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
                     <span className="mr-3">📅</span> Suggested Itinerary
                   </h2>
-                  <div className="bg-gradient-to-br from-primary-50 to-white p-6 rounded-2xl border border-primary-100">
-                    <pre className="whitespace-pre-wrap text-gray-700 font-sans leading-relaxed">
-                      {results.dailyPlan}
-                    </pre>
+                  <div className="bg-gradient-to-br from-primary-50 to-white p-6 rounded-2xl border border-primary-100 space-y-4">
+                    {Object.entries(results.dailyPlan).map(([day, info], idx) => (
+                      <div key={idx}>
+                        <h3 className="font-semibold text-primary-700 mb-1">
+                          {day} ({info.weather} Day)
+                        </h3>
+                        <ul className="list-disc list-inside text-gray-700">
+                          {info.activities.map((act, i) => <li key={i}>{act}</li>)}
+                        </ul>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </>
