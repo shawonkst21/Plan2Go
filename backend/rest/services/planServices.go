@@ -24,43 +24,39 @@ func (p *PlanService) GenerateTourPlan(ctx context.Context,
 	prompt := fmt.Sprintf(`
 You are an expert Bangladesh travel recommendation AI.
 
-Use ALL the following user preferences:
+User Preferences:
 
-Division: %s
-District: %s
-Trip Duration: %d days
-Budget Type: %s            (economical | normal | luxury)
-Preferred Location Type: %s (chill | nature | urban | mountains)
+- Division: %s
+- District: %s
+- Trip Duration: %d days
+- Budget Type: %s (economical | normal | luxury)
+- Preferred Location Type: %s (chill | nature | urban | mountains)
 
 Your tasks:
-1. Recommend the BEST tourist locations inside the district.
+
+1. Recommend the BEST 4-7 tourist locations in the district.
 2. For each location, provide:
-   - Nearby hotels suitable for the user's budget
-   - Famous restaurants nearby
-3. Recommendations must be based on:
-   - Expected weather for the next %d days
-   - User's budget type
-   - User's preferred location type
-   - Accessibility and safety
-   - Experience quality during that weather
-4. Weather MUST influence:
-   - Which locations you choose
+   - Name
+   - Short description
+   - Recommended activities
+   - Rating (between 3.5 and 5)
+   - Weather-appropriate accessories
+   - Nearby hotels (1-3) suitable for the user's budget with ratings
+   - Nearby restaurants (1-3) with ratings
+   - Image URL (optional, placeholder acceptable)
+3. Consider the weather for the next %d days to influence:
+   - Location choices
    - Accessories list
-   - Outdoor vs indoor preference
+   - Outdoor vs indoor activities
+4. Consider user's budget type and preferred location type for relevance.
+5. Ensure accessibility, safety, and quality of experience.
 
-Accessories Rules:
-- Include practical items for the location, weather, and trip type.
-- Examples: raincoat, sunglasses, water bottle, camera, hiking shoes.
+Output Requirements:
 
-STRICT OUTPUT RULES:
-- Return ONLY valid JSON of the format given below.
+- Return ONLY valid JSON in the EXACT format below.
 - No explanation, no extra text, no markdown.
-- MUST strictly match the JSON schema below.
 - No trailing commas.
-- Provide 4-7 locations.
-- rating must be between 3.5 and 5.
-- accessories must be appropriate for the weather and activities.
-- For hotels and restaurants, provide 1-3 options each per location.
+- Strictly match the following schema:
 
 JSON Format:
 {
@@ -82,7 +78,8 @@ JSON Format:
       ],
       "restaurants_nearby": [
         {"name": "", "rating": 0}
-      ]
+      ],
+      "image_url": ""
     }
   ]
 }

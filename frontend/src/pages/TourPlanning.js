@@ -33,55 +33,68 @@ const TourPlanning = () => {
     }));
   };
 
-  const generateRecommendations = () => {
+  const generateRecommendations = async () => {
     setLoading(true);
-    
-    setTimeout(() => {
-      const mockPlaces = [
-        {
-          name: 'Sundarbans Mangrove Forest',
-          description: 'Largest mangrove forest in the world, home to Royal Bengal Tigers',
-          bestTime: 'November to February',
-          sequence: 1,
-          rating: 4.8
-        },
-        {
-          name: 'Cox\'s Bazar Beach',
-          description: 'World\'s longest natural sea beach, perfect for relaxation',
-          bestTime: 'October to March',
-          sequence: 2,
-          rating: 4.7
-        },
-        {
-          name: 'Srimangal Tea Gardens',
-          description: 'Beautiful tea gardens and hills, known as the tea capital',
-          bestTime: 'November to April',
-          sequence: 3,
-          rating: 4.6
-        }
-      ];
 
-      const weatherBasedAccessories = [];
-      const currentWeather = 'sunny';
-      
-      if (currentWeather === 'rainy') {
-        weatherBasedAccessories.push('Umbrella', 'Raincoat', 'Waterproof backpack');
-      } else if (currentWeather === 'cold') {
-        weatherBasedAccessories.push('Jacket', 'Gloves', 'Warm hat');
-      } else {
-        weatherBasedAccessories.push('Sunscreen', 'Sunglasses', 'Cap', 'Light clothing');
+    try {
+      // Prepare request body
+      const requestBody = {
+        division: formData.division,
+        district: formData.district,
+        days: Number(formData.duration),
+        budget: formData.budget,
+        locationType: formData.locationType,
+      };
+
+      // Call backend API
+      const response = await fetch('http://localhost:8080/users/plan', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch travel plan from backend');
       }
 
-      weatherBasedAccessories.push('Comfortable shoes', 'Powerbank', 'First aid kit');
+      const data = await response.json();
 
+      // If backend provides accessories per location, merge them or use a default list
+      let accessories = [];
+      if (data.locations && data.locations.length > 0) {
+        data.locations.forEach(loc => {
+          if (loc.accessories) {
+            accessories = [...new Set([...accessories, ...loc.accessories])];
+          }
+        });
+      }
+
+      // Build daily plan dynamically
+      const dailyPlan = data.locations
+        .map((loc, idx) => `Day ${idx + 1}: Explore ${loc.name}`)
+        .join('\n');
+
+      // Update state
       setResults({
-        places: mockPlaces,
-        accessories: weatherBasedAccessories,
-        dailyPlan: `Day 1: Arrive and explore ${mockPlaces[0].name}\nDay 2: Visit ${mockPlaces[1].name}\nDay 3: Experience ${mockPlaces[2].name}`
+        places: data.locations,
+        accessories: accessories,
+        dailyPlan: dailyPlan,
       });
+
+    } catch (error) {
+      console.error(error);
+      setResults({
+        places: [],
+        accessories: [],
+        dailyPlan: 'Failed to fetch plan. Please try again.',
+      });
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -174,11 +187,10 @@ const TourPlanning = () => {
                       key={budget}
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, budget }))}
-                      className={`px-4 py-3 rounded-2xl border-2 transition font-medium ${
-                        formData.budget === budget
-                          ? 'border-primary-500 bg-primary-50 text-primary-700'
-                          : 'border-gray-200 hover:border-primary-300 text-gray-700'
-                      }`}
+                      className={`px-4 py-3 rounded-2xl border-2 transition font-medium ${formData.budget === budget
+                        ? 'border-primary-500 bg-primary-50 text-primary-700'
+                        : 'border-gray-200 hover:border-primary-300 text-gray-700'
+                        }`}
                     >
                       {budget.charAt(0).toUpperCase() + budget.slice(1)}
                     </button>
@@ -196,11 +208,10 @@ const TourPlanning = () => {
                       key={type}
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, locationType: type }))}
-                      className={`px-4 py-3 rounded-2xl border-2 transition font-medium ${
-                        formData.locationType === type
-                          ? 'border-primary-500 bg-primary-50 text-primary-700'
-                          : 'border-gray-200 hover:border-primary-300 text-gray-700'
-                      }`}
+                      className={`px-4 py-3 rounded-2xl border-2 transition font-medium ${formData.locationType === type
+                        ? 'border-primary-500 bg-primary-50 text-primary-700'
+                        : 'border-gray-200 hover:border-primary-300 text-gray-700'
+                        }`}
                     >
                       {type.charAt(0).toUpperCase() + type.slice(1)}
                     </button>
