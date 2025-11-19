@@ -79,10 +79,12 @@ export const AuthProvider = ({ children }) => {
       const data = await res.json();
 
       if (data.success) {
-        setUser(data.user);
-        localStorage.setItem('plan2go_user', JSON.stringify(data.user));
-        localStorage.setItem('plan2go_token', data.token);
-        return { success: true };
+        // ✅ Don't set user yet
+        // setUser(data.user);
+        // localStorage.setItem('plan2go_user', JSON.stringify(data.user));
+        // localStorage.setItem('plan2go_token', data.token);
+
+        return { success: true, email: formData.email }; // send email to OTP page
       } else {
         return { success: false, error: data.error };
       }
@@ -90,6 +92,30 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: 'Server error. Please try again.' };
     }
   };
+
+  const verifyOtp = async (otp, email) => {
+    try {
+      const res = await fetch('http://localhost:8080/users/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ otp, email }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        // Mark user as authenticated after verification
+        setUser(data.user);
+        localStorage.setItem('plan2go_user', JSON.stringify(data.user));
+        return { success: true };
+      } else {
+        return { success: false, error: data.error || 'OTP verification failed' };
+      }
+    } catch (err) {
+      return { success: false, error: 'Server error. Please try again.' };
+    }
+  };
+
 
   const logout = () => {
     setUser(null);
@@ -108,6 +134,7 @@ export const AuthProvider = ({ children }) => {
     setUser,
     login,
     register,
+    verifyOtp,
     logout,
     loading,
     isAuthenticated: !!user,

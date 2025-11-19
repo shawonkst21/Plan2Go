@@ -7,12 +7,14 @@ import (
 
 type Handler struct {
 	cnfMiddleWare middleware.ConfigMiddleware
-	userRepo repo.UserRepo
+	userRepo      repo.UserRepo
+	emailRepo     repo.EmailVerificationRepo
 }
 
-func NewHandler(cnf middleware.ConfigMiddleware, userRepo repo.UserRepo) *Handler {
+func NewHandler(cnf middleware.ConfigMiddleware, userRepo repo.UserRepo, emailRepo repo.EmailVerificationRepo) *Handler {
 	return &Handler{
 		cnfMiddleWare: cnf,
-		userRepo: userRepo,
+		userRepo:      userRepo,
+		emailRepo:     emailRepo,
 	}
 }

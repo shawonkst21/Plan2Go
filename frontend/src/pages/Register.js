@@ -42,13 +42,14 @@ const Register = () => {
     setLoading(true);
 
     const result = await register(formData);
-    
+
     if (result.success) {
-      navigate('/dashboard');
+      navigate('/verify-otp', { state: { email: result.email } });
     } else {
       setError(result.error || 'Registration failed. Please try again.');
     }
-    
+
+
     setLoading(false);
   };
 
@@ -66,7 +67,7 @@ const Register = () => {
             Start planning amazing adventures today
           </p>
         </div>
-        
+
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-100 p-8">
           <form className="space-y-5" onSubmit={handleSubmit}>
             {error && (
@@ -74,7 +75,7 @@ const Register = () => {
                 {error}
               </div>
             )}
-            
+
             <div>
               <label htmlFor="firstName" className="block text-sm font-semibold text-gray-700 mb-2">
                 First Name
@@ -105,7 +106,7 @@ const Register = () => {
                 onChange={handleChange}
               />
             </div>
-             <div>
+            <div>
               <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700 mb-2">
                 Phone Number
               </label>
@@ -121,7 +122,7 @@ const Register = () => {
               />
             </div>
 
-            
+
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                 Email Address
@@ -138,7 +139,7 @@ const Register = () => {
                 onChange={handleChange}
               />
             </div>
-            
+
             {/* <div>
               <label htmlFor="userType" className="block text-sm font-semibold text-gray-700 mb-2">
                 I am a
@@ -154,7 +155,7 @@ const Register = () => {
                 <option value="guide">👨‍🏫 Tour Guide</option>
               </select>
             </div> */}
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                 Password
@@ -171,7 +172,7 @@ const Register = () => {
                 onChange={handleChange}
               />
             </div>
-            
+
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-semibold text-gray-700 mb-2">
                 Confirm Password

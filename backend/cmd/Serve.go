@@ -25,11 +25,17 @@ func Serve() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	// Repositories
 	userRepo := repo.NewUserRepo(dbcn)
+	emailRepo := repo.NewEmailVerificationRepo(dbcn) // <-- new OTP repo
 	guideRepo := repo.NewGuideRepo(dbcn)
 
+	// Config & Middleware
 	cnf := config.GetConfig()
-	//gemini servies
+	cnfMiddleWare := middleware.NewConfigMiddleware(cnf)
+
+	// Gemini services
 	ctx := context.Background()
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
 		APIKey: os.Getenv("GEMINI_API_KEY"),
@@ -41,12 +47,12 @@ func Serve() {
 	planHandler := plan.NewPlanHandler(planServices)
 
 	guideHandler := guide.NewGuideHandler(guideRepo)
-
-	cnfMiddleWare := middleware.NewConfigMiddleware(cnf)
-	userhandler := user.NewHandler(*cnfMiddleWare, userRepo)
 	weatherHandler := weather.NewHandler()
 
-	server := rest.NewServer(cnf, userhandler, weatherHandler, planHandler, guideHandler)
-	server.Start()
+	// User handler with both repos
+	userHandler := user.NewHandler(*cnfMiddleWare, userRepo, emailRepo)
 
+	// Start server
+	server := rest.NewServer(cnf, userHandler, weatherHandler, planHandler, guideHandler)
+	server.Start()
 }
