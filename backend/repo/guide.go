@@ -2,18 +2,18 @@ package repo
 
 import (
 	"database/sql"
+	"time"
 )
 
 type Guide struct {
-	GuideID         int     `json:"guide_id"`
-	UserID          int     `json:"user_id"`
-	City            string  `json:"city"`
-	HourlyFee       float64 `json:"hourly_fee"`
-	Rating          float64 `json:"rating"`
-	Languages       string  `json:"languages"`
-	ExperienceYears int     `json:"experience_years"`
-	Bio             string  `json:"bio"`
-	Available       bool    `json:"available"`
+    ID                int       `json:"id"`
+    UserID            int       `json:"user_id"`
+    City              string    `json:"city"`
+    HourlyFee         float64   `json:"hourly_fee"`
+    Languages         string    `json:"languages"`
+    YearsOfExperience int       `json:"years_of_experience"`
+    CreatedAt         time.Time `json:"created_at"`
+    UpdatedAt         time.Time `json:"updated_at"`
 }
 
 type GuideRepo interface {
@@ -26,16 +26,14 @@ type guideRepo struct {
 }
 
 func NewGuideRepo(dbCon *sql.DB) GuideRepo {
-	return &guideRepo{
-		dbCon: dbCon,
-	}
+	return &guideRepo{dbCon: dbCon}
 }
 
 // Get all guides operating in a specific city
 func (r *guideRepo) GetGuidesByCity(city string) ([]Guide, error) {
 	query := `
-		SELECT guide_id, user_id, city, hourly_fee, rating, languages, experience_years, bio, available
-		FROM guide
+		SELECT id, user_id, city, hourly_fee, languages, years_of_experience, created_at, updated_at
+		FROM guides
 		WHERE city = ?
 	`
 
@@ -49,15 +47,14 @@ func (r *guideRepo) GetGuidesByCity(city string) ([]Guide, error) {
 	for rows.Next() {
 		var g Guide
 		err := rows.Scan(
-			&g.GuideID,
+			&g.ID,
 			&g.UserID,
 			&g.City,
 			&g.HourlyFee,
-			&g.Rating,
 			&g.Languages,
-			&g.ExperienceYears,
-			&g.Bio,
-			&g.Available,
+			&g.YearsOfExperience,
+			&g.CreatedAt,
+			&g.UpdatedAt,
 		)
 		if err != nil {
 			return nil, err
@@ -68,13 +65,13 @@ func (r *guideRepo) GetGuidesByCity(city string) ([]Guide, error) {
 	return guides, nil
 }
 
+// Create a new guide
 func (r *guideRepo) CreateGuide(g Guide) (*Guide, error) {
 	query := `
-		INSERT INTO guide 
-		(user_id, city, hourly_fee, rating, languages, experience_years, bio, available, created_at, updated_at)
-		VALUES (?, ?, ?, 0, ?, ?, ?, true, NOW(), NOW())
+		INSERT INTO guides (user_id, city, hourly_fee, languages, years_of_experience, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, NOW(), NOW())
 	`
-	result, err := r.dbCon.Exec(query, g.UserID, g.City, g.HourlyFee, g.Languages, g.ExperienceYears, g.Bio)
+	result, err := r.dbCon.Exec(query, g.UserID, g.City, g.HourlyFee, g.Languages, g.YearsOfExperience)
 	if err != nil {
 		return nil, err
 	}
@@ -84,8 +81,9 @@ func (r *guideRepo) CreateGuide(g Guide) (*Guide, error) {
 		return nil, err
 	}
 
-	g.GuideID = int(id)
-	g.Rating = 0
-	g.Available = true
+	g.ID = int(id)
+	g.CreatedAt = time.Now()
+	g.UpdatedAt = time.Now()
+
 	return &g, nil
 }

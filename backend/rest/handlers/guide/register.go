@@ -17,8 +17,8 @@ func (h *GuideHandler) CreateGuide(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Validate required fields
-	if guide.UserID == 0 || guide.City == "" || guide.HourlyFee <= 0 {
-		http.Error(w, "Missing required fields: user_id, city, hourly_fee", http.StatusBadRequest)
+	if  guide.City == "" || guide.HourlyFee <= 0 {
+		http.Error(w, "Missing required fields: city, hourly_fee", http.StatusBadRequest)
 		return
 	}
 
