@@ -12,7 +12,7 @@ var DB *sql.DB
 
 func ConnectDB() (*sql.DB, error) {
 	// Format: username:password@tcp(host:port)/database_name
-	dsn := "plan2go:12345@tcp(10.100.94.140:3306)/plan2go"
+	dsn := "root:@tcp(127.0.0.1:3306)/plan2go"
 
 	var err error
 	DB, err = sql.Open("mysql", dsn)
