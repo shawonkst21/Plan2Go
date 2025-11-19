@@ -31,5 +31,11 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux, manager *middleware.Manager
 			http.HandlerFunc(h.ChangePassword),
 		),
 	)
+	mux.Handle(
+		"POST /users/update/profile",
+		manager.With(
+			http.HandlerFunc(h.UpdateProfile),
+		),
+	)
 
 }

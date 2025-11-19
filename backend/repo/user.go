@@ -3,13 +3,13 @@ package repo
 import "database/sql"
 
 type User struct {
-	ID       int    `json:"id"`
+	ID        int    `json:"id"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 	Phone     string `json:"phone"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Photo    string `json:"photo"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	Photo     string `json:"photo"`
 }
 
 type UserRepo interface {
@@ -17,6 +17,7 @@ type UserRepo interface {
 	GetUserByEmail(email string) (*User, error)
 	GetUserPassword(email string) (string, error)
 	UpdatePassword(email, HashedPassword string) (*User, error)
+	UpdateUserProfile(user *User) (*User, error)
 }
 
 type userRepo struct {
@@ -48,7 +49,6 @@ func (r *userRepo) CreateUser(user User) (*User, error) {
 	user.ID = int(id)
 	return &user, nil
 }
-
 
 func (r *userRepo) GetUserByEmail(email string) (*User, error) {
 	query := `
@@ -111,4 +111,18 @@ func (r *userRepo) UpdatePassword(email, HashedPassword string) (*User, error) {
 
 	// 2. Return the updated user
 	return r.GetUserByEmail(email)
+}
+
+func (r *userRepo) UpdateUserProfile(user *User) (*User, error) {
+	query := `
+		UPDATE users
+		SET first_name = ?, last_name = ?, phone = ?
+		WHERE email = ?
+	`
+	_, err := r.dbCon.Exec(query, user.FirstName, user.LastName, user.Phone, user.Email)
+	if err != nil {
+		return nil, err
+	}
+
+	return r.GetUserByEmail(user.Email)
 }

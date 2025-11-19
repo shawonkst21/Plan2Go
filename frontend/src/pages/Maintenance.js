@@ -1,42 +1,166 @@
-import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import React, { useState } from "react";
+import { useAuth } from "../context/AuthContext";
 
 const Maintenance = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState("profile");
+
+  // Profile state
   const [profileData, setProfileData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: '',
-    address: ''
+    name: `${user?.first_name || ""} ${user?.last_name || ""}`,
+    email: user?.email || "",
+    phone: user?.phone || "",
+    address: user?.address || "",
   });
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Guide registration state
+  const [guideData, setGuideData] = useState({
+    city: "",
+    hourlyFee: "",
+    languages: "",
+    yearsOfExperience: "",
+  });
+  const [guideSaved, setGuideSaved] = useState(false);
+  const [guideLoading, setGuideLoading] = useState(false);
 
   const handleProfileChange = (e) => {
     setProfileData({
       ...profileData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
   };
 
-  const handleSaveProfile = (e) => {
-    e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleGuideChange = (e) => {
+    setGuideData({
+      ...guideData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  // Save profile
+  const handleSaveProfile = async () => {
+    if (!user) return;
+
+    setLoading(true);
+    const nameParts = profileData.name.trim().split(" ");
+    const first_name = nameParts.shift();
+    const last_name = nameParts.join(" ");
+
+    try {
+      const token = localStorage.getItem("plan2go_token");
+
+      const res = await fetch(
+        "http://localhost:8080/users/update/profile",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            first_name,
+            last_name,
+            phone: profileData.phone,
+            address: profileData.address,
+          }),
+        }
+      );
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        const text = await res.text();
+        data = { message: text };
+      }
+
+      if (!res.ok) {
+        alert(data.message || "Failed to update profile");
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem("plan2go_user", JSON.stringify(data.user));
+
+      setProfileData({
+        ...profileData,
+        name: `${data.user.first_name} ${data.user.last_name}`,
+        phone: data.user.phone || "",
+        address: data.user.address || "",
+      });
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err) {
+      console.error("Error updating profile:", err);
+      alert("Something went wrong while updating profile.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Guide registration
+  const handleGuideRegistration = async () => {
+    setGuideLoading(true);
+
+    try {
+      const response = await fetch(
+        "http://localhost:8080/users/guide/register",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: user?.id,
+            city: guideData.city,
+            hourly_fee: parseFloat(guideData.hourlyFee),
+            languages: guideData.languages
+              .split(",")
+              .map((l) => l.trim())
+              .join(","),
+            years_of_experience: parseInt(guideData.yearsOfExperience || "0"),
+          }),
+        }
+      );
+
+      if (response.ok) {
+        setGuideSaved(true);
+        setTimeout(() => setGuideSaved(false), 3000);
+        setGuideData({
+          city: "",
+          hourlyFee: "",
+          languages: "",
+          yearsOfExperience: "",
+        });
+      } else {
+        alert("Failed to register as guide. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error registering guide:", error);
+      alert("An error occurred. Please try again.");
+    } finally {
+      setGuideLoading(false);
+    }
   };
 
   const tabs = [
-    { id: 'profile', name: 'Profile', icon: '👤' },
-    { id: 'settings', name: 'Settings', icon: '⚙️' },
-    { id: 'security', name: 'Security', icon: '🔒' },
-    { id: 'notifications', name: 'Notifications', icon: '🔔' }
+    { id: "profile", name: "Profile", icon: "👤" },
+    { id: "guide", name: "Become a Guide", icon: "🗺️" },
+    { id: "settings", name: "Settings", icon: "⚙️" },
+    { id: "security", name: "Security", icon: "🔒" },
+    { id: "notifications", name: "Notifications", icon: "🔔" },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-primary-50/20 to-accent-50/10 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-10">
-          <h1 className="text-5xl font-bold text-gray-900 mb-3">Account Settings ⚙️</h1>
+          <h1 className="text-5xl font-bold text-gray-900 mb-3">
+            Account Settings ⚙️
+          </h1>
           <p className="text-xl text-gray-600">
             Manage your account settings and preferences
           </p>
@@ -47,15 +171,14 @@ const Maintenance = () => {
           <div className="lg:col-span-1">
             <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-4">
               <nav className="space-y-2">
-                {tabs.map(tab => (
+                {tabs.map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full text-left px-5 py-4 rounded-2xl transition-all font-semibold ${
-                      activeTab === tab.id
-                        ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg'
-                        : 'text-gray-700 hover:bg-primary-50'
-                    }`}
+                    className={`w-full text-left px-5 py-4 rounded-2xl transition-all font-semibold ${activeTab === tab.id
+                      ? "bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg"
+                      : "text-gray-700 hover:bg-primary-50"
+                      }`}
                   >
                     <span className="mr-3 text-xl">{tab.icon}</span>
                     {tab.name}
@@ -67,35 +190,48 @@ const Maintenance = () => {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            {activeTab === 'profile' && (
+            {/* PROFILE */}
+            {activeTab === "profile" && (
               <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Profile Information</h2>
-                <form onSubmit={handleSaveProfile} className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Full Name
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={profileData.name}
-                      onChange={handleProfileChange}
-                      className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Email Address
-                    </label>
-                    <input
-                      type="email"
-                      name="email"
-                      value={profileData.email}
-                      onChange={handleProfileChange}
-                      disabled
-                      className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl bg-gray-50 text-gray-500"
-                    />
-                    <p className="text-sm text-gray-500 mt-2">Email cannot be changed</p>
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900">
+                    Profile Information
+                  </h2>
+                  <span className="px-4 py-2 bg-primary-100 text-primary-700 rounded-xl text-sm font-bold">
+                    {user?.userType === "guide"
+                      ? "👨‍🏫 Tour Guide"
+                      : "✈️ Traveler"}
+                  </span>
+                </div>
+                <div className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Full Name
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={profileData.name}
+                        onChange={handleProfileChange}
+                        className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Email Address
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={profileData.email}
+                        disabled
+                        className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl bg-gray-50 text-gray-500"
+                      />
+                      <p className="text-sm text-gray-500 mt-2">
+                        Email cannot be changed
+                      </p>
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -107,7 +243,6 @@ const Maintenance = () => {
                       value={profileData.phone}
                       onChange={handleProfileChange}
                       className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
-                      placeholder="+880 1XXX-XXXXXX"
                     />
                   </div>
                   <div>
@@ -123,40 +258,166 @@ const Maintenance = () => {
                       placeholder="Your address"
                     />
                   </div>
-                  <div className="flex items-center justify-between pt-4">
-                    <div className="flex items-center">
-                      <span className="text-sm text-gray-600 mr-2">Account Type:</span>
-                      <span className="px-4 py-2 bg-primary-100 text-primary-700 rounded-xl text-sm font-bold">
-                        {user?.userType === 'guide' ? '👨‍🏫 Tour Guide' : '✈️ Traveler'}
-                      </span>
-                    </div>
+                  <div className="flex justify-end pt-4">
                     <button
-                      type="submit"
-                      className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-8 py-3 rounded-2xl font-semibold transition shadow-lg hover:shadow-xl"
+                      onClick={handleSaveProfile}
+                      disabled={loading}
+                      className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-8 py-3 rounded-2xl font-semibold transition shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {saved ? '✓ Saved!' : 'Save Changes'}
+                      {loading
+                        ? "Saving..."
+                        : saved
+                          ? "✓ Saved!"
+                          : "Save Changes"}
                     </button>
                   </div>
-                </form>
+                </div>
               </div>
             )}
 
-            {activeTab === 'settings' && (
+            {/* GUIDE */}
+            {activeTab === "guide" && (
               <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Preferences</h2>
+                <div className="mb-8">
+                  <h2 className="text-3xl font-bold text-gray-900 mb-2">
+                    Register as a Tour Guide
+                  </h2>
+                  <p className="text-gray-600">
+                    Share your local expertise and earn money by guiding
+                    travelers
+                  </p>
+                </div>
+                <div className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        City <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="city"
+                        value={guideData.city}
+                        onChange={handleGuideChange}
+                        required
+                        className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                        placeholder="e.g., Dhaka, Sylhet, Cox's Bazar"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Hourly Fee (BDT) <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        name="hourlyFee"
+                        value={guideData.hourlyFee}
+                        onChange={handleGuideChange}
+                        required
+                        min="0"
+                        step="0.01"
+                        className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                        placeholder="500"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Languages <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="languages"
+                      value={guideData.languages}
+                      onChange={handleGuideChange}
+                      required
+                      className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                      placeholder="e.g., English, Bengali, Hindi (comma-separated)"
+                    />
+                    <p className="text-sm text-gray-500 mt-2">
+                      Separate multiple languages with commas
+                    </p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Years of Experience <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      name="yearsOfExperience"
+                      value={guideData.yearsOfExperience}
+                      onChange={handleGuideChange}
+                      required
+                      min="0"
+                      className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                      placeholder="5"
+                    />
+                  </div>
+                  <div className="bg-primary-50 border border-primary-200 rounded-2xl p-5">
+                    <h3 className="font-bold text-primary-900 mb-3 flex items-center">
+                      <span className="mr-2">📝</span> Guide Requirements
+                    </h3>
+                    <ul className="text-sm text-primary-800 space-y-2">
+                      <li>• Must have local knowledge of your city</li>
+                      <li>• Good communication skills required</li>
+                      <li>• Professional conduct expected</li>
+                      <li>• Valid ID verification may be required</li>
+                    </ul>
+                  </div>
+                  <div className="flex justify-end pt-4">
+                    <button
+                      onClick={handleGuideRegistration}
+                      disabled={guideLoading}
+                      className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-8 py-3 rounded-2xl font-semibold transition shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {guideLoading
+                        ? "Submitting..."
+                        : guideSaved
+                          ? "✓ Registered!"
+                          : "Register as Guide"}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* SETTINGS */}
+            {activeTab === "settings" && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                  Preferences
+                </h2>
                 <div className="space-y-6">
                   {[
-                    { label: 'Language', desc: 'Choose your preferred language', options: ['English', 'বাংলা'] },
-                    { label: 'Currency', desc: 'Display prices in', options: ['BDT (৳)', 'USD ($)'] },
-                    { label: 'Theme', desc: 'Appearance mode', options: ['Light', 'Dark', 'System'] }
+                    {
+                      label: "Language",
+                      desc: "Choose your preferred language",
+                      options: ["English", "বাংলা"],
+                    },
+                    {
+                      label: "Currency",
+                      desc: "Display prices in",
+                      options: ["BDT (৳)", "USD ($)"],
+                    },
+                    {
+                      label: "Theme",
+                      desc: "Appearance mode",
+                      options: ["Light", "Dark", "System"],
+                    },
                   ].map((item, index) => (
-                    <div key={index} className="flex items-center justify-between py-5 border-b border-gray-200">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between py-5 border-b border-gray-200"
+                    >
                       <div>
-                        <h3 className="font-bold text-gray-900">{item.label}</h3>
-                        <p className="text-sm text-gray-600 mt-1">{item.desc}</p>
+                        <h3 className="font-bold text-gray-900">
+                          {item.label}
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {item.desc}
+                        </p>
                       </div>
                       <select className="px-5 py-2.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white">
-                        {item.options.map(opt => (
+                        {item.options.map((opt) => (
                           <option key={opt}>{opt}</option>
                         ))}
                       </select>
@@ -166,14 +427,23 @@ const Maintenance = () => {
               </div>
             )}
 
-            {activeTab === 'security' && (
+            {/* SECURITY */}
+            {activeTab === "security" && (
               <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Security Settings</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                  Security Settings
+                </h2>
                 <div className="space-y-8">
                   <div>
-                    <h3 className="font-bold text-gray-900 mb-6">Change Password</h3>
+                    <h3 className="font-bold text-gray-900 mb-6">
+                      Change Password
+                    </h3>
                     <div className="space-y-4">
-                      {['Current Password', 'New Password', 'Confirm New Password'].map((label, index) => (
+                      {[
+                        "Current Password",
+                        "New Password",
+                        "Confirm New Password",
+                      ].map((label, index) => (
                         <input
                           key={index}
                           type="password"
@@ -187,9 +457,13 @@ const Maintenance = () => {
                     </div>
                   </div>
                   <div className="border-t border-gray-200 pt-8">
-                    <h3 className="font-bold text-gray-900 mb-4">Two-Factor Authentication</h3>
+                    <h3 className="font-bold text-gray-900 mb-4">
+                      Two-Factor Authentication
+                    </h3>
                     <div className="flex items-center justify-between">
-                      <p className="text-gray-600">Add an extra layer of security to your account</p>
+                      <p className="text-gray-600">
+                        Add an extra layer of security to your account
+                      </p>
                       <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-2xl font-semibold transition">
                         Enable
                       </button>
@@ -199,24 +473,49 @@ const Maintenance = () => {
               </div>
             )}
 
-            {activeTab === 'notifications' && (
+            {/* NOTIFICATIONS */}
+            {activeTab === "notifications" && (
               <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
-                <h2 className="text-3xl font-bold text-gray-900 mb-8">Notification Preferences</h2>
+                <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                  Notification Preferences
+                </h2>
                 <div className="space-y-4">
                   {[
-                    { name: 'Email Notifications', desc: 'Receive updates via email' },
-                    { name: 'SMS Notifications', desc: 'Get important alerts via SMS' },
-                    { name: 'Push Notifications', desc: 'Browser and app notifications' },
-                    { name: 'Tour Reminders', desc: 'Reminders for upcoming tours' },
-                    { name: 'Guide Messages', desc: 'Notifications from your guides' }
+                    {
+                      name: "Email Notifications",
+                      desc: "Receive updates via email",
+                    },
+                    {
+                      name: "SMS Notifications",
+                      desc: "Get important alerts via SMS",
+                    },
+                    {
+                      name: "Push Notifications",
+                      desc: "Browser and app notifications",
+                    },
+                    {
+                      name: "Tour Reminders",
+                      desc: "Reminders for upcoming tours",
+                    },
+                    {
+                      name: "Guide Messages",
+                      desc: "Notifications from your guides",
+                    },
                   ].map((item, index) => (
-                    <div key={index} className="flex items-center justify-between py-5 border-b border-gray-200">
+                    <div
+                      key={index}
+                      className="flex items-center justify-between py-5 border-b border-gray-200"
+                    >
                       <div>
                         <h3 className="font-bold text-gray-900">{item.name}</h3>
                         <p className="text-sm text-gray-600 mt-1">{item.desc}</p>
                       </div>
                       <label className="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" className="sr-only peer" defaultChecked />
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          defaultChecked
+                        />
                         <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary-500"></div>
                       </label>
                     </div>
@@ -224,6 +523,7 @@ const Maintenance = () => {
                 </div>
               </div>
             )}
+
           </div>
         </div>
       </div>
