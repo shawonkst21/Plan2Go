@@ -133,7 +133,7 @@ const Maintenance = () => {
           yearsOfExperience: "",
         });
       } else {
-        alert("Failed to register as guide. Please try again.");
+        alert("User Already Exist As Guide For The city. Please try again.");
       }
     } catch (err) {
       console.error("Error registering guide:", err);
@@ -173,8 +173,8 @@ const Maintenance = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`w-full text-left px-5 py-4 rounded-2xl transition-all font-semibold ${activeTab === tab.id
-                        ? "bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg"
-                        : "text-gray-700 hover:bg-primary-50"
+                      ? "bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg"
+                      : "text-gray-700 hover:bg-primary-50"
                       }`}
                   >
                     <span className="mr-3 text-xl">{tab.icon}</span>
@@ -378,8 +378,149 @@ const Maintenance = () => {
               </div>
             )}
 
-            {/* SETTINGS, SECURITY, NOTIFICATIONS tabs same as first file */}
-            {/* ... rest of the code remains unchanged ... */}
+            {/* SETTINGS */}
+            {activeTab === "settings" && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                  Preferences
+                </h2>
+                <div className="space-y-6">
+                  {[
+                    {
+                      label: "Language",
+                      desc: "Choose your preferred language",
+                      options: ["English", "বাংলা"],
+                    },
+                    {
+                      label: "Currency",
+                      desc: "Display prices in",
+                      options: ["BDT (৳)", "USD ($)"],
+                    },
+                    {
+                      label: "Theme",
+                      desc: "Appearance mode",
+                      options: ["Light", "Dark", "System"],
+                    },
+                  ].map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between py-5 border-b border-gray-200"
+                    >
+                      <div>
+                        <h3 className="font-bold text-gray-900">
+                          {item.label}
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {item.desc}
+                        </p>
+                      </div>
+                      <select className="px-5 py-2.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white">
+                        {item.options.map((opt) => (
+                          <option key={opt}>{opt}</option>
+                        ))}
+                      </select>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* SECURITY */}
+            {activeTab === "security" && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                  Security Settings
+                </h2>
+                <div className="space-y-8">
+                  <div>
+                    <h3 className="font-bold text-gray-900 mb-6">
+                      Change Password
+                    </h3>
+                    <div className="space-y-4">
+                      {[
+                        "Current Password",
+                        "New Password",
+                        "Confirm New Password",
+                      ].map((label, index) => (
+                        <input
+                          key={index}
+                          type="password"
+                          placeholder={label}
+                          className="w-full px-4 py-3.5 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition"
+                        />
+                      ))}
+                      <button className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-8 py-3 rounded-2xl font-semibold transition shadow-lg hover:shadow-xl">
+                        Update Password
+                      </button>
+                    </div>
+                  </div>
+                  <div className="border-t border-gray-200 pt-8">
+                    <h3 className="font-bold text-gray-900 mb-4">
+                      Two-Factor Authentication
+                    </h3>
+                    <div className="flex items-center justify-between">
+                      <p className="text-gray-600">
+                        Add an extra layer of security to your account
+                      </p>
+                      <button className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-2xl font-semibold transition">
+                        Enable
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* NOTIFICATIONS */}
+            {activeTab === "notifications" && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                  Notification Preferences
+                </h2>
+                <div className="space-y-4">
+                  {[
+                    {
+                      name: "Email Notifications",
+                      desc: "Receive updates via email",
+                    },
+                    {
+                      name: "SMS Notifications",
+                      desc: "Get important alerts via SMS",
+                    },
+                    {
+                      name: "Push Notifications",
+                      desc: "Browser and app notifications",
+                    },
+                    {
+                      name: "Tour Reminders",
+                      desc: "Reminders for upcoming tours",
+                    },
+                    {
+                      name: "Guide Messages",
+                      desc: "Notifications from your guides",
+                    },
+                  ].map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between py-5 border-b border-gray-200"
+                    >
+                      <div>
+                        <h3 className="font-bold text-gray-900">{item.name}</h3>
+                        <p className="text-sm text-gray-600 mt-1">{item.desc}</p>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="sr-only peer"
+                          defaultChecked
+                        />
+                        <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary-500"></div>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
