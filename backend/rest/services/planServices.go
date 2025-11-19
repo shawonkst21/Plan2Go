@@ -20,45 +20,42 @@ func NewPlanService(client *genai.Client) *PlanService {
 func (p *PlanService) GenerateTourPlan(ctx context.Context,
 	division string, district string, budget string, locationType string, days int) (map[string]interface{}, error) {
 
-	// Updated Gemini prompt: includes hotels and restaurants
+	// Updated Gemini prompt: includes hotels, restaurants, and daily itinerary
 	prompt := fmt.Sprintf(`
 You are an expert Bangladesh travel recommendation AI.
 
 User Preferences:
-
 - Division: %s
 - District: %s
 - Trip Duration: %d days
 - Budget Type: %s (economical | normal | luxury)
 - Preferred Location Type: %s (chill | nature | urban | mountains)
 
-Your tasks:
-
-1. Recommend the BEST 4-7 tourist locations in the district.
-2. For each location, provide:
+Tasks:
+1. Recommend 4-7 tourist locations in the district.
+2. For each location provide:
    - Name
-   - Short description
-   - Recommended activities
-   - Rating (between 3.5 and 5)
-   - Weather-appropriate accessories
-   - Nearby hotels (1-3) suitable for the user's budget with ratings
+   - Description
+   - Activities
+   - Rating
+   - Accessories
+   - Nearby hotels (1-3) with ratings
    - Nearby restaurants (1-3) with ratings
-   - Image URL (optional, placeholder acceptable)
-3. Consider the weather for the next %d days to influence:
-   - Location choices
-   - Accessories list
-   - Outdoor vs indoor activities
-4. Consider user's budget type and preferred location type for relevance.
-5. Ensure accessibility, safety, and quality of experience.
+   - Image URL
+3. Generate a DAILY ITINERARY:
+   - Divide activities among days logically
+   - Include weather type for each day (Sunny, Rainy, Cloudy, etc.)
+   - Include activities that suit that day's weather
+   - Format: "Day 1": {"weather": "Sunny", "activities": ["activity1", "activity2"]}
 
-Output Requirements:
+Consider:
+- Weather for next %d days affects activities
+- Budget affects hotels/restaurants
+- Location type affects activities
+- Accessibility and safety
 
-- Return ONLY valid JSON in the EXACT format below.
-- No explanation, no extra text, no markdown.
-- No trailing commas.
-- Strictly match the following schema:
+STRICT JSON OUTPUT ONLY:
 
-JSON Format:
 {
   "division": "",
   "district": "",
@@ -73,15 +70,15 @@ JSON Format:
       "activities": [],
       "rating": 0,
       "accessories": [],
-      "hotels_nearby": [
-        {"name": "", "rating": 0}
-      ],
-      "restaurants_nearby": [
-        {"name": "", "rating": 0}
-      ],
+      "hotels_nearby": [{"name": "", "rating": 0}],
+      "restaurants_nearby": [{"name": "", "rating": 0}],
       "image_url": ""
     }
-  ]
+  ],
+  "daily_itinerary": {
+    "Day 1": {"weather": "", "activities": []},
+    "Day 2": {"weather": "", "activities": []}
+  }
 }
 `, division, district, days, budget, locationType, days)
 
