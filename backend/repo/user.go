@@ -3,13 +3,14 @@ package repo
 import "database/sql"
 
 type User struct {
-	ID        int    `json:"id"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Phone     string `json:"phone"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	Photo     string `json:"photo"`
+	ID         int    `json:"id"`
+	FirstName  string `json:"first_name"`
+	LastName   string `json:"last_name"`
+	Phone      string `json:"phone"`
+	Email      string `json:"email"`
+	Password   string `json:"password"`
+	Photo      string `json:"photo"`
+	IsVerified bool   `json:"is_verified"`
 }
 
 type UserRepo interface {
@@ -18,6 +19,7 @@ type UserRepo interface {
 	GetUserPassword(email string) (string, error)
 	UpdatePassword(email, HashedPassword string) (*User, error)
 	UpdateUserProfile(user *User) (*User, error)
+	UpdateUserVerification(email string, isVerified bool) (*User, error)
 }
 
 type userRepo struct {
@@ -125,4 +127,20 @@ func (r *userRepo) UpdateUserProfile(user *User) (*User, error) {
 	}
 
 	return r.GetUserByEmail(user.Email)
+}
+
+// UpdateUserVerification updates only the is_verified field for a user
+func (r *userRepo) UpdateUserVerification(email string, isVerified bool) (*User, error) {
+	query := `
+		UPDATE users
+		SET is_verified = ?
+		WHERE email = ?
+	`
+	_, err := r.dbCon.Exec(query, isVerified, email)
+	if err != nil {
+		return nil, err
+	}
+
+	// Return the updated user
+	return r.GetUserByEmail(email)
 }

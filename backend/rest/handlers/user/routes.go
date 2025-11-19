@@ -14,6 +14,12 @@ func (h *Handler) RegisterRoutes(mux *http.ServeMux, manager *middleware.Manager
 		),
 	)
 	mux.Handle(
+		"POST /users/verify",
+		manager.With(
+			http.HandlerFunc(h.VerifyOTP),
+		),
+	)
+	mux.Handle(
 		"POST /users/login",
 		manager.With(
 			http.HandlerFunc(h.Login),

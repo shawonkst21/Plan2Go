@@ -4,16 +4,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"plan2go-backend/config"
 	"plan2go-backend/repo"
 	"plan2go-backend/util"
+	"time"
 )
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.Body)
 	var user repo.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	if user.Email == "" || user.Password == "" || user.FirstName == "" {
+		http.Error(w, "Missing required fields", http.StatusBadRequest)
 		return
 	}
 
@@ -24,21 +28,37 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	user.Password = hashedPassword
+	user.IsVerified = false
 
-	// Use the repository to create user
+	// Create user in DB
 	createdUser, err := h.userRepo.CreateUser(user)
 	if err != nil {
 		http.Error(w, "User already exists or DB error", http.StatusConflict)
 		return
 	}
 
-	// Generate token
-	cnf := config.GetConfig()
-	token, _ := util.GenerateToken(cnf.Jwt_SecretKey, createdUser.Email)
+	// Generate OTP
+	otp := util.GenerateOTP()
+	expiry := time.Now().Add(60 * time.Minute)
 
+	// Save OTP in DB
+	err = h.emailRepo.SaveOTP(createdUser.Email, otp, expiry)
+	if err != nil {
+		http.Error(w, "Failed to generate OTP", http.StatusInternalServerError)
+		return
+	}
+
+	// Send OTP email
+	err = util.SendOTPEmail(createdUser.Email, otp)
+	if err != nil {
+		fmt.Println("Warning: failed to send OTP email:", err)
+		// optionally continue, user can retry verification
+	}
+
+	// Respond
 	util.SendData(w, map[string]interface{}{
 		"success": true,
-		"token": token,
-		"user":  createdUser,
-		}, http.StatusCreated)
+		"user":    createdUser,
+		"message": "User created successfully. OTP sent to email.",
+	}, http.StatusCreated)
 }
