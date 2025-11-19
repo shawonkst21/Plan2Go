@@ -10,7 +10,7 @@ func (h *GuideHandler) GuideRoutes(mux *http.ServeMux, manager *middleware.Manag
 	mux.Handle(
 		"POST /users/guide",
 		manager.With(
-			http.HandlerFunc(h.GetGuidesByCity),
+			http.HandlerFunc(h.GetGuidesinfo),
 		),
 	)
 	mux.Handle(

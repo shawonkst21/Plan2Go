@@ -7,18 +7,21 @@ import (
 )
 
 type Guide struct {
-    ID                int       `json:"id"`
-    UserID            int       `json:"user_id"`
-    City              string    `json:"city"`
-    HourlyFee         float64   `json:"hourly_fee"`
-    Languages         string    `json:"languages"`
-    YearsOfExperience int       `json:"years_of_experience"`
-    CreatedAt         time.Time `json:"created_at"`
-    UpdatedAt         time.Time `json:"updated_at"`
+	ID                int       `json:"id"`
+	UserID            int       `json:"user_id"`
+	FirstName         string    `json:"first_name"`
+	LastName          string    `json:"last_name"`
+	City              string    `json:"city"`
+	HourlyFee         float64   `json:"hourly_fee"`
+	Languages         string    `json:"languages"`
+	YearsOfExperience int       `json:"years_of_experience"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 }
 
+
 type GuideRepo interface {
-	GetGuidesByCity(city string) ([]Guide, error)
+	GetGuides(city string) ([]Guide, error)
 	CreateGuide(g Guide) (*Guide, error)
 }
 
@@ -31,14 +34,22 @@ func NewGuideRepo(dbCon *sql.DB) GuideRepo {
 }
 
 // Get all guides operating in a specific city
-func (r *guideRepo) GetGuidesByCity(city string) ([]Guide, error) {
+func (r *guideRepo) GetGuides(city string) ([]Guide, error) {
 	query := `
-		SELECT id, user_id, city, hourly_fee, languages, years_of_experience, created_at, updated_at
-		FROM guides
-		WHERE city = ?
+		SELECT g.id, g.user_id, u.first_name, u.last_name, g.city, g.hourly_fee,
+		       g.languages, g.years_of_experience
+		FROM guides g
+		JOIN users u ON g.user_id = u.id
+		WHERE 1=1
 	`
+	args := []interface{}{}
 
-	rows, err := r.dbCon.Query(query, city)
+	if city != "" {
+		query += " AND g.city = ?"
+		args = append(args, city)
+	}
+
+	rows, err := r.dbCon.Query(query, args...)
 	if err != nil {
 		return nil, err
 	}
@@ -48,15 +59,9 @@ func (r *guideRepo) GetGuidesByCity(city string) ([]Guide, error) {
 	for rows.Next() {
 		var g Guide
 		err := rows.Scan(
-			&g.ID,
-			&g.UserID,
-			&g.City,
-			&g.HourlyFee,
-			&g.Languages,
-			&g.YearsOfExperience,
-			&g.CreatedAt,
-			&g.UpdatedAt,
-		)
+			&g.ID, &g.UserID, &g.FirstName, &g.LastName,
+			&g.City, &g.HourlyFee, &g.Languages, &g.YearsOfExperience,
+					)
 		if err != nil {
 			return nil, err
 		}
@@ -65,6 +70,11 @@ func (r *guideRepo) GetGuidesByCity(city string) ([]Guide, error) {
 
 	return guides, nil
 }
+
+
+
+
+
 
 // Create a new guide
 func (r *guideRepo) CreateGuide(g Guide) (*Guide, error) {
