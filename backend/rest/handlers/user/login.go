@@ -42,6 +42,7 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	cnf := config.GetConfig()
 	token, _ := util.GenerateToken(cnf.Jwt_SecretKey, req.Email)
 
-	util.SendData(w, map[string]string{
+	util.SendData(w, map[string]interface{}{
+		"success": true,
 		"token": token}, http.StatusOK)
 }

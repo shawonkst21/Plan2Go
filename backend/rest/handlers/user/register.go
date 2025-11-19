@@ -2,6 +2,7 @@ package user
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"plan2go-backend/config"
 	"plan2go-backend/repo"
@@ -9,6 +10,7 @@ import (
 )
 
 func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.Body)
 	var user repo.User
 	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
@@ -34,8 +36,9 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	cnf := config.GetConfig()
 	token, _ := util.GenerateToken(cnf.Jwt_SecretKey, createdUser.Email)
 
-	util.SendData(w, map[string]string{
-		"message": "User created successfully",
+	util.SendData(w, map[string]interface{}{
+		"success": true,
 		"token": token,
+		"user":  createdUser,
 		}, http.StatusCreated)
 }
