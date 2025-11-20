@@ -9,6 +9,7 @@ import (
 	db "plan2go-backend/infra/DB"
 	"plan2go-backend/repo"
 	"plan2go-backend/rest"
+	"plan2go-backend/rest/handlers/activity"
 	"plan2go-backend/rest/handlers/guide"
 	"plan2go-backend/rest/handlers/plan"
 	"plan2go-backend/rest/handlers/user"
@@ -30,6 +31,7 @@ func Serve() {
 	userRepo := repo.NewUserRepo(dbcn)
 	emailRepo := repo.NewEmailVerificationRepo(dbcn) // <-- new OTP repo
 	guideRepo := repo.NewGuideRepo(dbcn)
+	activityRepo:= repo.NewActivityRepo(dbcn) // <-- new Activity repo
 
 	// Config & Middleware
 	cnf := config.GetConfig()
@@ -48,11 +50,13 @@ func Serve() {
 
 	guideHandler := guide.NewGuideHandler(guideRepo)
 	weatherHandler := weather.NewHandler()
+	activityService := services.NewActivityService(activityRepo)
+	activityHandler:= activity.NewActivityHandler(activityService)
 
 	// User handler with both repos
 	userHandler := user.NewHandler(*cnfMiddleWare, userRepo, emailRepo)
 
 	// Start server
-	server := rest.NewServer(cnf, userHandler, weatherHandler, planHandler, guideHandler)
+	server := rest.NewServer(cnf, userHandler, weatherHandler, planHandler, guideHandler, activityHandler)
 	server.Start()
 }
