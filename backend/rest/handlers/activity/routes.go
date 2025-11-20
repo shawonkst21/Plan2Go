@@ -12,4 +12,10 @@ func (h *ActivityHandler) RegisterActivityRoutes(mux *http.ServeMux, manager *mi
 			http.HandlerFunc(h.TrackActivity),
 		),
 	)
+	mux.Handle(
+		"POST /users/activity",
+		manager.With(
+			http.HandlerFunc(h.ListActivity),
+		),
+	)
 }

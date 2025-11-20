@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ActivityLogger from '../helper/activityloger';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -16,13 +17,15 @@ const Login = () => {
     setLoading(true);
 
     const result = await login(email, password);
-    
+
     if (result.success) {
+      <ActivityLogger userId={131} action={"Login"} description={"User Just Logged In"} />
+
       navigate('/dashboard');
     } else {
       setError(result.error || 'Login failed. Please try again.');
     }
-    
+
     setLoading(false);
   };
 
@@ -40,7 +43,7 @@ const Login = () => {
             Sign in to continue your journey
           </p>
         </div>
-        
+
         <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl border border-gray-100 p-8">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {error && (
@@ -48,7 +51,7 @@ const Login = () => {
                 {error}
               </div>
             )}
-            
+
             <div>
               <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
                 Email Address
@@ -65,7 +68,7 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            
+
             <div>
               <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
                 Password
