@@ -35,6 +35,7 @@ const Dashboard = () => {
       gradient: 'from-gray-400 to-gray-600'
     }
   ];
+  
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-primary-50/20 to-accent-50/10 py-8">

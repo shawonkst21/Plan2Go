@@ -10,7 +10,31 @@ const Navbar = () => {
     logout();
     navigate('/');
   };
+  const trackDummy = async (action,description) => {
+    const body = {
+      user_id: user?.id || 133,
+      action: `${action}`,
+      description: `${description}`
+    };
 
+    try {
+      const response = await fetch('http://localhost:8080/users/activity/track', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to track activity');
+      }
+
+      console.log('Dummy activity tracked successfully');
+    } catch (error) {
+      console.error('Error tracking dummy activity:', error);
+    }
+  };
   return (
     <nav className="bg-white/80 backdrop-blur-md border-b border-gray-100 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,24 +53,28 @@ const Navbar = () => {
               <>
                 <Link
                   to="/tour-planning"
+                  onClick={() => trackDummy("planning button", "he want to visit planning page")}
                   className="text-gray-600 hover:text-primary-600 px-4 py-2 rounded-xl text-sm font-medium transition hover:bg-primary-50"
                 >
                   Planning
                 </Link>
                 <Link
                   to="/tour-monitor"
+                  onClick={() => trackDummy("monitor button", "he want to visit monitor page")}
                   className="text-gray-600 hover:text-primary-600 px-4 py-2 rounded-xl text-sm font-medium transition hover:bg-primary-50"
                 >
                   Monitor
                 </Link>
                 <Link
                   to="/tour-guides"
+                  onClick={() => trackDummy("guides button", "he want to visit guides page")}
                   className="text-gray-600 hover:text-primary-600 px-4 py-2 rounded-xl text-sm font-medium transition hover:bg-primary-50"
                 >
                   Guides
                 </Link>
                 <Link
                   to="/maintenance"
+                 onClick={() => trackDummy("settings button", "he want to visit settings page")}
                   className="text-gray-600 hover:text-primary-600 px-4 py-2 rounded-xl text-sm font-medium transition hover:bg-primary-50"
                 >
                   Settings
@@ -68,12 +96,14 @@ const Navbar = () => {
               <>
                 <Link
                   to="/login"
+                  onClick={() => trackDummy("signin button", "he want to login")}
                   className="text-gray-700 hover:text-primary-600 px-4 py-2 rounded-xl text-sm font-medium transition hover:bg-gray-50"
                 >
                   Sign In
                 </Link>
                 <Link
                   to="/register"
+                    onClick={() => trackDummy("getstarted button", "try to create account")}
                   className="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white px-6 py-2.5 rounded-xl text-sm font-semibold transition shadow-sm hover:shadow-md"
                 >
                   Get Started

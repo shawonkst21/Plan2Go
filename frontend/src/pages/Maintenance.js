@@ -132,6 +132,7 @@ const Maintenance = () => {
 
       if (response.ok) {
         setGuideSaved(true);
+        trackDummy("Guide Registration", "User registered as a guide"); 
         setTimeout(() => setGuideSaved(false), 3000);
         setGuideData({
           city: "",
@@ -208,6 +209,31 @@ const Maintenance = () => {
       setPwMessage("Something went wrong.");
     } finally {
       setPwLoading(false);
+    }
+  };
+ const trackDummy = async (action,description) => {
+    const body = {
+      user_id: user?.id || 133,
+      action: `${action}`,
+      description: `${description}`
+    };
+
+    try {
+      const response = await fetch('http://localhost:8080/users/activity/track', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to track activity');
+      }
+
+      console.log('Dummy activity tracked successfully');
+    } catch (error) {
+      console.error('Error tracking dummy activity:', error);
     }
   };
 

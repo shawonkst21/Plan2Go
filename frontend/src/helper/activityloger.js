@@ -4,7 +4,7 @@ export default function ActivityLogger({ userId, action, description }) {
   useEffect(() => {
     if (!userId || !action) return;
 
-    fetch("http://localhost:8080/api/activity/track", {
+    fetch("http://localhost:8080/users/activity/track", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
