@@ -46,6 +46,8 @@ const Maintenance = () => {
     });
   };
 
+  //Handle Activity
+
   // Save profile
   const handleSaveProfile = async () => {
     if (!user) return;
@@ -156,6 +158,7 @@ const Maintenance = () => {
     { id: "settings", name: "Settings", icon: "⚙️" },
     { id: "security", name: "Security", icon: "🔒" },
     { id: "notifications", name: "Notifications", icon: "🔔" },
+    { id: "activity", name: "Activity", icon: "🗺️" },
   ];
 
   const handlePasswordChange = async () => {
@@ -628,6 +631,50 @@ const Maintenance = () => {
                 </div>
               </div>
             )}
+
+            {/* ACTIVITY */}
+            {activeTab === "activity" && (
+              <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
+                <h2 className="text-3xl font-bold text-gray-900 mb-8">
+                  Activity Log
+                </h2>
+                <div className="space-y-4">
+                  {[
+                    {
+                      name: "Login Activity",
+                      desc: "User Login Using Email And Password",
+                    },
+                    {
+                      name: "SMS Notifications",
+                      desc: "Get important alerts via SMS",
+                    },
+                    {
+                      name: "Push Notifications",
+                      desc: "Browser and app notifications",
+                    },
+                    {
+                      name: "Tour Reminders",
+                      desc: "Reminders for upcoming tours",
+                    },
+                    {
+                      name: "Guide Messages",
+                      desc: "Notifications from your guides",
+                    },
+                  ].map((item, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between py-5 border-b border-gray-200"
+                    >
+                      <div>
+                        <h3 className="font-bold text-gray-900">{item.name}</h3>
+                        <p className="text-sm text-gray-600 mt-1">{item.desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
           </div>
         </div>
       </div>
