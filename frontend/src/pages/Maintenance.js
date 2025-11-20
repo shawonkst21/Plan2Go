@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import ActivityLogger from '../helper/activityloger';
 
@@ -49,6 +49,31 @@ const Maintenance = () => {
   };
 
   //Handle Activity
+  const trackDummy = async (action, description) => {
+    const body = {
+      user_id: user?.id || 133,
+      action: `${action}`,
+      description: `${description}`
+    };
+
+    try {
+      const response = await fetch('http://localhost:8080/users/activity/track', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to track activity');
+      }
+
+      console.log('Dummy activity tracked successfully');
+    } catch (error) {
+      console.error('Error tracking dummy activity:', error);
+    }
+  };
 
   // Save profile
   const handleSaveProfile = async () => {
@@ -136,6 +161,7 @@ const Maintenance = () => {
 
       if (response.ok) {
         setGuideSaved(true);
+        trackDummy("Guide Registration", "User registered as a guide");
         setTimeout(() => setGuideSaved(false), 3000);
         setGuideData({
           city: "",
@@ -215,6 +241,42 @@ const Maintenance = () => {
       setPwLoading(false);
     }
   };
+
+  //activity
+  const [activities, setActivities] = useState([]);
+  const [activityLoading, setActivityLoading] = useState(false);
+
+  const fetchActivities = async () => {
+    if (!user?.id) return;
+
+    setActivityLoading(true);
+
+    try {
+      const response = await fetch("http://localhost:8080/users/activity", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id: user.id }),
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch activities");
+
+      const data = await response.json();
+      setActivities(data);
+    } catch (err) {
+      console.error("Activity Fetch Error:", err);
+    } finally {
+      setActivityLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "activity") {
+      fetchActivities();
+    }
+  }, [activeTab]);
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-primary-50/20 to-accent-50/10 py-8">
@@ -459,8 +521,6 @@ const Maintenance = () => {
               </div>
             )}
 
-            {/* SETTINGS, SECURITY, NOTIFICATIONS tabs remain unchanged */}
-            {/* ... (rest of your code here unchanged) */}
             {/* SETTINGS */}
             {activeTab === "settings" && (
               <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-8">
@@ -640,41 +700,36 @@ const Maintenance = () => {
                 <h2 className="text-3xl font-bold text-gray-900 mb-8">
                   Activity Log
                 </h2>
+
+                {/* Loading */}
+                {activityLoading && (
+                  <p className="text-gray-600 text-lg">Loading activities...</p>
+                )}
+
+                {/* Empty */}
+                {!activityLoading && activities.length === 0 && (
+                  <p className="text-gray-500 text-lg">No activities found.</p>
+                )}
+
+                {/* Activity list */}
                 <div className="space-y-4">
-                  {[
-                    {
-                      name: "Login Activity",
-                      desc: "User Login Using Email And Password",
-                    },
-                    {
-                      name: "SMS Notifications",
-                      desc: "Get important alerts via SMS",
-                    },
-                    {
-                      name: "Push Notifications",
-                      desc: "Browser and app notifications",
-                    },
-                    {
-                      name: "Tour Reminders",
-                      desc: "Reminders for upcoming tours",
-                    },
-                    {
-                      name: "Guide Messages",
-                      desc: "Notifications from your guides",
-                    },
-                  ].map((item, index) => (
+                  {activities.map((item, index) => (
                     <div
                       key={index}
-                      className="flex items-center justify-between py-5 border-b border-gray-200"
+                      className="py-5 border-b border-gray-200"
                     >
-                      <div>
-                        <h3 className="font-bold text-gray-900">{item.name}</h3>
-                        <p className="text-sm text-gray-600 mt-1">{item.desc}</p>
-                      </div>
+                      <h3 className="font-bold text-gray-900">
+                        {item.action || "Unknown Activity"}
+                      </h3>
+
+                      <p className="text-sm text-gray-600 mt-1">
+                        {item.description}
+                      </p>
                     </div>
                   ))}
                 </div>
               </div>
+
             )}
 
           </div>
